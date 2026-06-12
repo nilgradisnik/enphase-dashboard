@@ -1,0 +1,14 @@
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2>Per-Inverter Health & Status</h2>
+    <button class="refresh-btn" onclick="fetchHealth()">Refresh Health</button>
+</div>
+<div id="health-summary" style="margin-bottom: 1rem; font-weight: bold; padding-top: 1rem;"></div>
+<div id="health-data" class="data-box" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+    <p class="loading">Click refresh to load inverter status.</p>
+</div>
+<div class="data-box">
+    <details>
+        <summary style="cursor: pointer; font-weight: bold; color: #ff6600;">Raw Inventory JSON</summary>
+        <pre id="raw-inventory" style="margin-top: 1rem;">No data yet.</pre>
+    </details>
+</div>

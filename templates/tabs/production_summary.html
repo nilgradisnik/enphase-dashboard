@@ -1,0 +1,13 @@
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2>System Summary</h2>
+    <button class="refresh-btn" onclick="fetchSummary()">Refresh Summary</button>
+</div>
+<div id="summary-data" class="data-box">
+    <p class="loading">Click refresh or open tab to load summary data.</p>
+</div>
+<div class="data-box">
+    <details>
+        <summary style="cursor: pointer; font-weight: bold; color: #ff6600;">Raw Summary JSON</summary>
+        <pre id="raw-summary" style="margin-top: 1rem;">No data yet.</pre>
+    </details>
+</div>

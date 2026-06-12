@@ -1,0 +1,13 @@
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2>Phase Electrical Details</h2>
+    <button class="refresh-btn" onclick="fetchPhases()">Refresh Phase Data</button>
+</div>
+<div id="phase-data" class="data-box">
+    <p class="loading">Click refresh to load phase details.</p>
+</div>
+<div class="data-box">
+    <details>
+        <summary style="cursor: pointer; font-weight: bold; color: #ff6600;">Raw Phase JSON</summary>
+        <pre id="raw-phases" style="margin-top: 1rem;">No data yet.</pre>
+    </details>
+</div>

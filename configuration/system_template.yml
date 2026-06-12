@@ -1,0 +1,41 @@
+system_overview:
+  capacity_dc: "8.36 kW DC"
+  panel_count: 20
+  inverter_system: "Enphase IQ8M Microinverters"
+  installation_type: "Residential Rooftop"
+  panel_model: "Hyundai HiE-S440HG"
+  technology: "M6 PERC Shingled"
+
+gateway_info:
+  device_type: "IQ Gateway"
+  api_version: 1
+  integrated_meter: "Yes"
+  authentication: "JWT Required (D7+)"
+
+panel_specs:
+  electrical:
+    - label: "Peak Power (Pmax)"
+      value: "440 W"
+    - label: "Module Efficiency"
+      value: "21.1%"
+    - label: "Max Power Voltage (Vmpp)"
+      value: "38.6 V"
+    - label: "Max Power Current (Impp)"
+      value: "11.41 A"
+    - label: "Open Circuit Voltage (Voc)"
+      value: "46.6 V"
+    - label: "Short Circuit Current (Isc)"
+      value: "12.01 A"
+  physical_thermal:
+    - label: "Dimensions"
+      value: "1899 x 1096 x 30 mm"
+    - label: "Weight"
+      value: "21.8 kg"
+    - label: "Cells"
+      value: "320 Cells (Shingled)"
+    - label: "Temp Coefficient (Pmax)"
+      value: "-0.34 %/°C"
+    - label: "Front Glass"
+      value: "3.2mm Tempered Glass"
+    - label: "Frame"
+      value: "Anodized Aluminum Alloy"

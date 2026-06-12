@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- Live Power Tab -->
+    <div id="live-tab" class="tab-content active">
+        {% include "tabs/live_power.html" %}
+    </div>
+
+    <!-- Summary Tab -->
+    <div id="summary-tab" class="tab-content">
+        {% include "tabs/production_summary.html" %}
+    </div>
+
+    <!-- Phase Details Tab -->
+    <div id="phase-tab" class="tab-content">
+        {% include "tabs/phase_details.html" %}
+    </div>
+
+    <!-- System Health Tab -->
+    <div id="health-tab" class="tab-content">
+        {% include "tabs/system_health.html" %}
+    </div>
+
+    <!-- Connectivity Tab -->
+    <div id="connectivity-tab" class="tab-content">
+        {% include "tabs/connectivity.html" %}
+    </div>
+
+    <!-- Event Logs Tab -->
+    <div id="events-tab" class="tab-content">
+        {% include "tabs/event_logs.html" %}
+    </div>
+
+    <!-- System Specs Tab -->
+    <div id="specs-tab" class="tab-content">
+        {% include "tabs/system_specs.html" %}
+    </div>
+{% endblock %}

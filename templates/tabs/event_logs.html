@@ -1,0 +1,13 @@
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2>System Event Logs</h2>
+    <button class="refresh-btn" onclick="fetchEvents()">Refresh Events</button>
+</div>
+<div id="events-data" class="data-box">
+    <p class="loading">Click refresh to load system events.</p>
+</div>
+<div class="data-box">
+    <details>
+        <summary style="cursor: pointer; font-weight: bold; color: #ff6600;">Raw Events JSON</summary>
+        <pre id="raw-events" style="margin-top: 1rem;">No data yet.</pre>
+    </details>
+</div>

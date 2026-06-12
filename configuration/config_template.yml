@@ -1,0 +1,3 @@
+gateway_ip: "envoy.local"
+use_https: true
+gateway_token: "YOUR_BEARER_TOKEN_HERE"
