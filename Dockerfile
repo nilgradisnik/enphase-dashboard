@@ -11,7 +11,7 @@ ENV FLASK_APP=app.py
 
 # Install dependencies
 # We copy the requirements file from the app directory
-COPY enphase_dashboard/requirements.txt .
+COPY enphase-dashboard/requirements.txt .
 # Install requirements + PyJWT (needed by Enphase-API)
 RUN pip install --no-cache-dir -r requirements.txt PyJWT
 
@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt PyJWT
 COPY Enphase-API /Enphase-API
 
 # Copy the application code
-COPY enphase_dashboard/ .
+COPY enphase-dashboard/ .
 
 # Expose the port Flask runs on
 EXPOSE 5000

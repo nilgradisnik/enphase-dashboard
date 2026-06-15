@@ -4,7 +4,7 @@ services:
     enphase-dashboard:
         build:
             context: ..
-            dockerfile: ./enphase_dashboard/Dockerfile
+            dockerfile: ./enphase-dashboard/Dockerfile
         container_name: enphase-dashboard
         ports:
             - "5000:5000"
