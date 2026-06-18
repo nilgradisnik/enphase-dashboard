@@ -147,7 +147,7 @@ async function fetchSummary() {
         const lifetimeExport = data[1].actEnergyRcvd || 0;
         const lifetimeConsumption = lifetimeProduction - lifetimeExport + lifetimeImport;
 
-        let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">';
+        let html = '<div class="responsive-grid">';
         html += `
             <div class="data-box" style="margin-top: 0;">
                 <h4 style="margin-top: 0; color: #28a745;">Lifetime Solar Production</h4>
@@ -278,7 +278,7 @@ async function fetchConnectivity() {
             return `<span class="status-tag ${ok ? 'status-ok' : 'status-err'}">${val.toUpperCase()}</span>`;
         };
 
-        let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">';
+        let html = '<div class="responsive-grid">';
         html += `
             <div class="data-box" style="margin-top:0;">
                 <p><strong>MQTT State:</strong> ${getStatusTag(conn.mqtt_state)}</p>
