@@ -3,16 +3,7 @@ import os
 import json
 import yaml
 from flask import Flask, render_template, jsonify
-
-# Add Enphase-API to sys.path to use the local library
-LIBRARY_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../Enphase-API/Python/src'))
-sys.path.append(LIBRARY_PATH)
-
-try:
-    from enphase_api.local.gateway import Gateway
-except ImportError:
-    print(f"Error: Could not import enphase_api from {LIBRARY_PATH}")
-    sys.exit(1)
+from enphase_api.local.gateway import Gateway
 
 app = Flask(__name__)
 
@@ -108,6 +99,6 @@ def connectivity_api():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    print(f"Starting dashboard. Ensure Enphase-API is available at: {LIBRARY_PATH}")
+    print(f"Starting dashboard.")
     app.run(debug=True, host='0.0.0.0', port=5000)
 
