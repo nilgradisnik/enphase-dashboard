@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enphase Local Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -14,6 +15,7 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="openTab(event, 'live-tab')">Live Power</button>
             <button class="tab-btn" onclick="openTab(event, 'summary-tab')">Production Summary</button>
+            <button class="tab-btn" onclick="openTab(event, 'history-tab')">Daily History</button>
             <button class="tab-btn" onclick="openTab(event, 'phase-tab')">Phase Details</button>
             <button class="tab-btn" onclick="openTab(event, 'health-tab')">System Health</button>
             <button class="tab-btn" onclick="openTab(event, 'connectivity-tab')">Connectivity</button>

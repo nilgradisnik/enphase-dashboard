@@ -1,0 +1,36 @@
+<div class="tab-header">
+    <h2 style="margin: 0;">Daily Energy History</h2>
+    <div class="tab-controls">
+        <button class="refresh-btn" onclick="syncDatabase()">Sync Database Now</button>
+    </div>
+</div>
+
+<div class="data-box" style="background: white; border: 1px solid #ddd; padding: 1.5rem; position: relative;">
+    <h3 style="margin-top: 0; color: #ff6600;">Solar Production, Grid Export & House Consumption</h3>
+    <div style="width: 100%; height: 400px; position: relative;">
+        <canvas id="historyChart"></canvas>
+    </div>
+</div>
+
+<div class="data-box" style="margin-top: 1.5rem;">
+    <h3 style="margin-top: 0; color: #333;">Detailed History Log</h3>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;" id="history-table">
+            <thead>
+                <tr style="border-bottom: 2px solid #ff6600; font-weight: bold; color: #333;">
+                    <th style="padding: 0.8rem 0.5rem;">Date</th>
+                    <th style="padding: 0.8rem 0.5rem;">Solar Production</th>
+                    <th style="padding: 0.8rem 0.5rem;">Exported to Grid</th>
+                    <th style="padding: 0.8rem 0.5rem;">Imported from Grid</th>
+                    <th style="padding: 0.8rem 0.5rem;">House Consumption</th>
+                    <th style="padding: 0.8rem 0.5rem;">Status</th>
+                </tr>
+            </thead>
+            <tbody id="history-table-body">
+                <tr>
+                    <td colspan="6" class="loading" style="padding: 1.5rem; text-align: center;">Loading historical data...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
