@@ -1,0 +1,10 @@
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Local SQLite databases
+instance/
+*.db
+
+# OS files
+.DS_Store

@@ -63,6 +63,9 @@ function openTab(evt, tabName) {
         if (tabName === 'summary-tab' && document.getElementById('summary-data').querySelector('.loading')) {
             fetchSummary();
         }
+        if (tabName === 'history-tab') {
+            fetchHistory();
+        }
         if (tabName === 'health-tab' && document.getElementById('health-data').querySelector('.loading')) {
             fetchHealth();
         }
@@ -345,3 +348,170 @@ window.addEventListener('DOMContentLoaded', () => {
         updateRefreshInterval();
     }
 });
+
+let historyChartInstance = null;
+
+async function syncDatabase() {
+    const btn = document.querySelector("#history-tab .refresh-btn");
+    if (btn) {
+        btn.textContent = "Syncing...";
+        btn.disabled = true;
+    }
+    
+    try {
+        const res = await fetch('/api/history/refresh', { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Sync Error');
+        await fetchHistory();
+    } catch (err) {
+        console.error("Sync error:", err);
+        alert("Failed to sync database: " + err.message);
+    } finally {
+        if (btn) {
+            btn.textContent = "Sync Database Now";
+            btn.disabled = false;
+        }
+    }
+}
+
+async function fetchHistory() {
+    const tableBody = document.getElementById('history-table-body');
+    if (tableBody) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="loading" style="padding: 1.5rem; text-align: center;">Updating history data...</td></tr>';
+    }
+    
+    try {
+        const res = await fetch('/api/history/daily');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'API Error');
+        
+        if (data.length === 0) {
+            if (tableBody) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="padding: 1.5rem; text-align: center; color: #888;">No historical data in database yet. Try running "Sync Database Now".</td></tr>';
+            }
+            return;
+        }
+        
+        // Render Chart
+        renderHistoryChart(data);
+        
+        // Render Table
+        if (tableBody) {
+            let html = '';
+            const sortedData = [...data].reverse();
+            sortedData.forEach(row => {
+                const statusTag = row.is_interpolated 
+                    ? '<span class="status-tag" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba;">Estimated</span>' 
+                    : '<span class="status-tag" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;">Normal</span>';
+                
+                html += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 0.8rem 0.5rem; font-weight: bold;">${row.date}</td>
+                        <td style="padding: 0.8rem 0.5rem; color: #28a745;">${row.production_kwh.toFixed(2)} kWh</td>
+                        <td style="padding: 0.8rem 0.5rem; color: #007bff;">${row.export_kwh.toFixed(2)} kWh</td>
+                        <td style="padding: 0.8rem 0.5rem; color: #dc3545;">${row.import_kwh.toFixed(2)} kWh</td>
+                        <td style="padding: 0.8rem 0.5rem; color: #ff6600; font-weight: bold;">${row.consumption_kwh.toFixed(2)} kWh</td>
+                        <td style="padding: 0.8rem 0.5rem;">${statusTag}</td>
+                    </tr>
+                `;
+            });
+            tableBody.innerHTML = html;
+        }
+    } catch (err) {
+        console.error("Fetch history error:", err);
+        if (tableBody) {
+            tableBody.innerHTML = `<tr><td colspan="6" class="status-tag status-err" style="display: table-cell; text-align: center; padding: 1rem; margin: 1rem;">Error loading history: ${err.message}</td></tr>`;
+        }
+    }
+}
+
+function renderHistoryChart(data) {
+    const canvas = document.getElementById('historyChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    if (historyChartInstance) {
+        historyChartInstance.destroy();
+    }
+    
+    const dates = data.map(d => d.date);
+    const productions = data.map(d => d.production_kwh);
+    const exports = data.map(d => d.export_kwh);
+    const imports = data.map(d => d.import_kwh);
+    const consumptions = data.map(d => d.consumption_kwh);
+    
+    historyChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: 'Solar Production (kWh)',
+                    data: productions,
+                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                    borderColor: '#28a745',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Grid Export (kWh)',
+                    data: exports,
+                    backgroundColor: 'rgba(0, 123, 255, 0.7)',
+                    borderColor: '#007bff',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Grid Import (kWh)',
+                    data: imports,
+                    backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                    borderColor: '#dc3545',
+                    borderWidth: 1
+                },
+                {
+                    label: 'House Consumption (kWh)',
+                    data: consumptions,
+                    backgroundColor: 'rgba(255, 102, 0, 0.7)',
+                    borderColor: '#ff6600',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Energy (kWh)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        boxWidth: 12
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        afterBody: function(items) {
+                            const dataIndex = items[0].dataIndex;
+                            if (data[dataIndex] && data[dataIndex].is_interpolated) {
+                                return '\n* Estimated data due to server downtime';
+                            }
+                            return '';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}

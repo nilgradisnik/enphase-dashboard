@@ -3,13 +3,30 @@ name: 'enphase dashboard'
 services:
     enphase-dashboard:
         build:
-            context: ..
-            dockerfile: ./enphase-dashboard/Dockerfile
+            context: .
+            dockerfile: Dockerfile
         container_name: enphase-dashboard
         ports:
             - "5000:5000"
         volumes:
             - ./configuration:/app/configuration
         restart: unless-stopped
+        depends_on:
+            - db
         environment:
             - FLASK_ENV=production
+            - DATABASE_URL=postgresql://postgres:secretpassword@db:5432/enphase
+
+    db:
+        image: postgres:15-alpine
+        container_name: enphase-db
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: enphase
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: secretpassword
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+
+volumes:
+    pgdata:

@@ -2,10 +2,28 @@ import sys
 import os
 import json
 import yaml
+from datetime import datetime
 from flask import Flask, render_template, jsonify
+from flask_apscheduler import APScheduler
 from enphase_api.local.gateway import Gateway
+from db import db, MeterReading, DailyStats
 
 app = Flask(__name__)
+
+# Database configuration
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///enphase.db')
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SCHEDULER_API_ENABLED'] = True
+
+db.init_app(app)
+
+# Initialize Scheduler
+scheduler = APScheduler()
+scheduler.init_app(app)
 
 CONFIG_FILE = 'configuration/config.yml'
 SPECS_FILE = 'configuration/system.yml'
@@ -97,6 +115,45 @@ def connectivity_api():
         return jsonify(json.loads(raw_data))
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/history/daily')
+def daily_history_api():
+    try:
+        stats = DailyStats.query.order_by(DailyStats.date.asc()).all()
+        return jsonify([s.to_dict() for s in stats])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/history/refresh', methods=['POST'])
+def refresh_history_api():
+    try:
+        from dashboard_services import record_reading
+        record_reading(app)
+        return jsonify({"status": "success", "message": "Readings pulled and aggregated successfully."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Scheduled job definitions
+@scheduler.task('interval', id='record_readings_job', minutes=15)
+def scheduled_fetch():
+    from dashboard_services import record_reading
+    record_reading(app)
+
+# Create tables and start scheduler
+with app.app_context():
+    db.create_all()
+    # Trigger initial fetch at startup if DB is empty to populate initial record
+    try:
+        if not MeterReading.query.first():
+            print("Database empty. Performing initial readings fetch...")
+            from dashboard_services import record_reading
+            record_reading(app)
+    except Exception as e:
+        print(f"Failed to perform initial fetch: {e}")
+
+if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+    scheduler.start()
+    print("Background data collection scheduler started.")
 
 if __name__ == '__main__':
     print(f"Starting dashboard.")
