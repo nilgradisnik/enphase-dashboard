@@ -3,6 +3,14 @@ from datetime import datetime, date, time, timedelta, timezone
 from sqlalchemy import or_
 from db import db, MeterReading, DailyStats
 
+def normalize_dt(dt):
+    """Ensure datetimes are timezone-naive representing UTC for safe mathematical comparisons."""
+    if dt is None:
+        return None
+    if dt.tzinfo is not None:
+        return dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
+
 def get_gateway_readings():
     """Fetch readings from Enphase Envoy Gateway."""
     from app import load_config, get_authenticated_gateway
@@ -32,9 +40,9 @@ def record_reading(app):
             # Use timestamp from gateway or fallback to current UTC time (naive UTC for SQL compatibility)
             gw_ts = prod_meter.get('timestamp')
             if gw_ts:
-                timestamp = datetime.fromtimestamp(gw_ts, tz=timezone.utc).replace(tzinfo=None)
+                timestamp = normalize_dt(datetime.fromtimestamp(gw_ts, tz=timezone.utc))
             else:
-                timestamp = datetime.now(timezone.utc).replace(tzinfo=None)
+                timestamp = normalize_dt(datetime.now(timezone.utc))
             
             # Check if this reading already exists
             existing = db.session.get(MeterReading, timestamp)
@@ -44,6 +52,7 @@ def record_reading(app):
             
             # Get the previous reading before inserting the new one, to check for gaps
             prev_reading = MeterReading.query.order_by(MeterReading.timestamp.desc()).first()
+            prev_ts = normalize_dt(prev_reading.timestamp) if prev_reading else None
             
             new_reading = MeterReading(
                 timestamp=timestamp,
@@ -56,10 +65,10 @@ def record_reading(app):
             print(f"Recorded reading at {timestamp} UTC: Prod={prod_wh} Wh, Import={import_wh} Wh, Export={export_wh} Wh")
             
             # If a gap of > 2 hours is detected, handle it
-            if prev_reading:
-                time_diff = timestamp - prev_reading.timestamp
+            if prev_ts:
+                time_diff = timestamp - prev_ts
                 if time_diff > timedelta(hours=2):
-                    print(f"Gap detected between {prev_reading.timestamp} and {timestamp} ({time_diff.total_seconds()/3600:.2f} hours). Interpolating...")
+                    print(f"Gap detected between {prev_ts} and {timestamp} ({time_diff.total_seconds()/3600:.2f} hours). Interpolating...")
                     interpolate_gap(prev_reading, new_reading)
                 else:
                     # Normal update: recalculate today's stats
@@ -77,8 +86,8 @@ def interpolate_gap(prev_reading, new_reading):
     Interpolate missing daily values when the collector was offline.
     Spreads the delta energy proportionally across the days of the gap.
     """
-    t_start = prev_reading.timestamp
-    t_end = new_reading.timestamp
+    t_start = normalize_dt(prev_reading.timestamp)
+    t_end = normalize_dt(new_reading.timestamp)
     
     prod_delta = new_reading.production_wh - prev_reading.production_wh
     import_delta = new_reading.import_wh - prev_reading.import_wh
