@@ -37,7 +37,7 @@ The system uses two SQL tables defined in `db.py`:
 
 ### `meter_readings` (Raw Periodic Readings)
 Stores raw measurements taken every 15 minutes.
-* `timestamp` (DateTime, Primary Key, index) - Naive UTC timestamp of the reading.
+* `timestamp` (DateTime, Primary Key, index) - UTC timestamp of the reading.
 * `production_wh` (Float) - Cumulative production meter reading.
 * `import_wh` (Float) - Cumulative grid meter import reading.
 * `export_wh` (Float) - Cumulative grid meter export reading.
@@ -50,7 +50,7 @@ Stores calculated daily statistics for fast dashboard queries.
 * `export_kwh` (Float) - Total exported to the grid in kWh.
 * `consumption_kwh` (Float) - Total consumed by the house in kWh.
 * `is_interpolated` (Boolean) - True if the data for this day was estimated/interpolated due to server downtime.
-* `updated_at` (DateTime) - Last time this record was updated.
+* `updated_at` (DateTime) - UTC timestamp of last record update, refreshed on change.
 
 ---
 

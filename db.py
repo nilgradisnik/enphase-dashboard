@@ -5,7 +5,7 @@ db = SQLAlchemy()
 
 class MeterReading(db.Model):
     __tablename__ = 'meter_readings'
-    timestamp = db.Column(db.DateTime(timezone=True), primary_key=True, index=True)
+    timestamp = db.Column(db.DateTime, primary_key=True, index=True)
     production_wh = db.Column(db.Float, nullable=False)
     import_wh = db.Column(db.Float, nullable=False)
     export_wh = db.Column(db.Float, nullable=False)
@@ -26,7 +26,7 @@ class DailyStats(db.Model):
     export_kwh = db.Column(db.Float, nullable=False)
     consumption_kwh = db.Column(db.Float, nullable=False)
     is_interpolated = db.Column(db.Boolean, default=False, nullable=False)
-    updated_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def to_dict(self):
         return {
