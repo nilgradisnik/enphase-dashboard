@@ -256,6 +256,11 @@ pre {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
+.status-tag.tag-sm {
+    padding: 0.12rem 0.45rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.25px;
+}
 .status-ok {
     background: var(--success-light);
     color: #065f46;

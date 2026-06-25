@@ -26,9 +26,9 @@
                 <strong>Reported:</strong> <span style="color: var(--text-main);" x-text="formatDate(inv.last_rpt_date)"></span>
             </p>
             <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.75rem;">
-                <span class="status-tag" :class="inv.operating ? 'status-ok' : 'status-err'">OP</span>
-                <span class="status-tag" :class="inv.producing ? 'status-ok' : 'status-err'">PROD</span>
-                <span class="status-tag" :class="inv.communicating ? 'status-ok' : 'status-err'">COMM</span>
+                <span class="status-tag tag-sm" :class="inv.operating ? 'status-ok' : 'status-err'">OP</span>
+                <span class="status-tag tag-sm" :class="inv.producing ? 'status-ok' : 'status-err'">PROD</span>
+                <span class="status-tag tag-sm" :class="inv.communicating ? 'status-ok' : 'status-err'">COMM</span>
             </div>
         </div>
     </template>
