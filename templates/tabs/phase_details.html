@@ -1,13 +1,47 @@
 <div style="display:flex; justify-content:space-between; align-items:center;">
     <h2>Phase Electrical Details</h2>
-    <button class="refresh-btn" onclick="fetchPhases()">Refresh Phase Data</button>
+    <button class="refresh-btn" @click="fetchPhases()" :disabled="loadingPhases">
+        <span x-text="loadingPhases ? 'Refreshing...' : 'Refresh Phase Data'"></span>
+    </button>
 </div>
-<div id="phase-data" class="data-box">
-    <p class="loading">Click refresh to load phase details.</p>
+
+<div class="data-box" x-show="loadingPhases && phases.length === 0">
+    <p class="loading">Updating phase details...</p>
 </div>
+
+<div class="data-box" x-show="phases.length > 0" style="padding: 1.5rem 1.75rem 0.25rem 1.75rem;">
+    <template x-for="(meter, idx) in phases" :key="meter.eid">
+        <div style="margin-bottom: 2rem;">
+            <h3 x-text="idx === 0 ? 'Production Meter' : 'Grid Meter'" style="color: var(--primary); border-bottom: 2px solid var(--border-card); padding-bottom: 0.5rem; margin-top: 0;"></h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-card); font-weight: bold; color: var(--text-main);">
+                        <th style="padding: 0.8rem 0.5rem;">Channel</th>
+                        <th style="padding: 0.8rem 0.5rem;">Active Power</th>
+                        <th style="padding: 0.8rem 0.5rem;">Voltage</th>
+                        <th style="padding: 0.8rem 0.5rem;">Freq</th>
+                        <th style="padding: 0.8rem 0.5rem;">Power Factor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="(ch, cidx) in meter.channels" :key="cidx">
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 0.8rem 0.5rem; font-weight: bold; color: var(--text-main);" x-text="'Phase ' + (cidx + 1)"></td>
+                            <td style="padding: 0.8rem 0.5rem;" x-text="formatPower(ch.activePower || 0)"></td>
+                            <td style="padding: 0.8rem 0.5rem;" x-text="(ch.voltage || 0).toFixed(2) + ' V'"></td>
+                            <td style="padding: 0.8rem 0.5rem;" x-text="(ch.freq || 0).toFixed(2) + ' Hz'"></td>
+                            <td style="padding: 0.8rem 0.5rem;" x-text="(ch.pwrFactor || 0).toFixed(2)"></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </template>
+</div>
+
 <div class="data-box">
     <details>
         <summary>Raw Phase JSON</summary>
-        <pre id="raw-phases" style="margin-top: 1rem;">No data yet.</pre>
+        <pre x-text="rawPhases">No data yet.</pre>
     </details>
 </div>

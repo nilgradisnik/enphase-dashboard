@@ -2,42 +2,42 @@
 
 {% block content %}
     <!-- Live Power Tab -->
-    <div id="live-tab" class="tab-content active">
+    <div id="live-tab" class="tab-content" x-show="activeTab === 'live-tab'">
         {% include "tabs/live_power.html" %}
     </div>
 
     <!-- Summary Tab -->
-    <div id="summary-tab" class="tab-content">
+    <div id="summary-tab" class="tab-content" x-show="activeTab === 'summary-tab'">
         {% include "tabs/production_summary.html" %}
     </div>
 
     <!-- Daily History Tab -->
-    <div id="history-tab" class="tab-content">
+    <div id="history-tab" class="tab-content" x-show="activeTab === 'history-tab'">
         {% include "tabs/history.html" %}
     </div>
 
     <!-- Phase Details Tab -->
-    <div id="phase-tab" class="tab-content">
+    <div id="phase-tab" class="tab-content" x-show="activeTab === 'phase-tab'">
         {% include "tabs/phase_details.html" %}
     </div>
 
     <!-- System Health Tab -->
-    <div id="health-tab" class="tab-content">
+    <div id="health-tab" class="tab-content" x-show="activeTab === 'health-tab'">
         {% include "tabs/system_health.html" %}
     </div>
 
     <!-- Connectivity Tab -->
-    <div id="connectivity-tab" class="tab-content">
+    <div id="connectivity-tab" class="tab-content" x-show="activeTab === 'connectivity-tab'">
         {% include "tabs/connectivity.html" %}
     </div>
 
     <!-- Event Logs Tab -->
-    <div id="events-tab" class="tab-content">
+    <div id="events-tab" class="tab-content" x-show="activeTab === 'events-tab'">
         {% include "tabs/event_logs.html" %}
     </div>
 
     <!-- System Specs Tab -->
-    <div id="specs-tab" class="tab-content">
+    <div id="specs-tab" class="tab-content" x-show="activeTab === 'specs-tab'">
         {% include "tabs/system_specs.html" %}
     </div>
 {% endblock %}

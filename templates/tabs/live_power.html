@@ -1,33 +1,41 @@
 <div class="tab-header">
     <h2 style="margin: 0;">Real-Time Meter Readings</h2>
     <div class="tab-controls">
-        <label for="refresh-rate" style="font-size: 0.9rem; font-weight: bold;">Auto-Refresh:</label>
-        <select id="refresh-rate" onchange="updateRefreshInterval()" style="padding: 0.4rem; border-radius: 4px; border: 1px solid #ddd;">
+        <label style="font-size: 0.9rem; font-weight: bold;">Auto-Refresh:</label>
+        <select x-model.number="refreshRate" @change="updateRefreshInterval()">
             <option value="0">Off</option>
             <option value="1000">1 Second</option>
-            <option value="3000" selected>3 Seconds</option>
+            <option value="3000">3 Seconds</option>
             <option value="5000">5 Seconds</option>
         </select>
-        <button class="refresh-btn" onclick="fetchMeters()">Refresh Now</button>
+        <button class="refresh-btn" @click="fetchMeters()" :disabled="loadingMeters">
+            <span x-show="!loadingMeters">Refresh Now</span>
+            <span x-show="loadingMeters" class="loading">Refreshing...</span>
+        </button>
     </div>
 </div>
-<div id="live-data" class="data-box">
-    <!-- 1. Production -->
+
+<div class="data-box" x-show="meters.length === 0 && loadingMeters">
+    <p class="loading">Loading real-time data...</p>
+</div>
+
+<div class="data-box" x-show="meters.length > 0">
+    <!-- 1. Solar Production -->
     <div class="live-card">
         <div>
             <div class="live-label">Solar Production</div>
             <div style="font-size:0.85rem; color: var(--text-muted);">Generating power from panels</div>
         </div>
-        <div id="val-prod" class="live-val" style="color: var(--success);">0 W</div>
+        <div class="live-val" style="color: var(--success);" x-text="formatPower(prodPower)">0 W</div>
     </div>
 
-    <!-- 2. Grid -->
+    <!-- 2. Grid Flow -->
     <div class="live-card">
         <div>
-            <div id="label-grid" class="live-label">Grid Flow</div>
+            <div class="live-label" x-text="gridPower < 0 ? 'Exporting to Grid' : 'Importing from Grid'">Grid Flow</div>
             <div style="font-size:0.85rem; color: var(--text-muted);">Net flow at the meter</div>
         </div>
-        <div id="val-grid" class="live-val">0 W</div>
+        <div class="live-val" :style="{ color: gridPower < 0 ? 'var(--primary)' : 'var(--danger)' }" x-text="formatPower(Math.abs(gridPower))">0 W</div>
     </div>
 
     <!-- 3. Consumption -->
@@ -36,13 +44,13 @@
             <div class="live-label">House Consumption</div>
             <div style="font-size:0.85rem; color: var(--text-muted);">Total power being used by home</div>
         </div>
-        <div id="val-cons" class="live-val" style="color: var(--accent);">0 W</div>
+        <div class="live-val" style="color: var(--accent);" x-text="formatPower(consPower)">0 W</div>
     </div>
 </div>
+
 <div class="data-box">
     <details>
         <summary>Raw Meters JSON</summary>
-        <pre id="raw-meters" style="margin-top: 1rem;">No data yet.</pre>
+        <pre x-text="rawMeters">No data yet.</pre>
     </details>
 </div>
-

@@ -9,23 +9,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-    <div class="container">
+    <div class="container" x-data="dashboard" x-init="init()">
         <header class="app-header">
             <h1 class="app-title">Enphase Local Dashboard <span>⚡</span></h1>
             <p class="config-info">Gateway: <span class="gateway-ip">{{ config.gateway_ip }}</span></p>
         </header>
         
         <div class="tabs">
-            <button class="tab-btn active" onclick="openTab(event, 'live-tab')">Live Power</button>
-            <button class="tab-btn" onclick="openTab(event, 'summary-tab')">Production Summary</button>
-            <button class="tab-btn" onclick="openTab(event, 'history-tab')">Daily History</button>
-            <button class="tab-btn" onclick="openTab(event, 'phase-tab')">Phase Details</button>
-            <button class="tab-btn" onclick="openTab(event, 'health-tab')">System Health</button>
-            <button class="tab-btn" onclick="openTab(event, 'connectivity-tab')">Connectivity</button>
-            <button class="tab-btn" onclick="openTab(event, 'events-tab')">Event Logs</button>
-            <button class="tab-btn" onclick="openTab(event, 'specs-tab')">System Specs</button>
+            <button class="tab-btn" :class="{ active: activeTab === 'live-tab' }" @click="openTab('live-tab')">Live Power</button>
+            <button class="tab-btn" :class="{ active: activeTab === 'summary-tab' }" @click="openTab('summary-tab')">Production Summary</button>
+            <button class="tab-btn" :class="{ active: activeTab === 'history-tab' }" @click="openTab('history-tab')">Daily History</button>
+            <button class="tab-btn" :class="{ active: activeTab === 'phase-tab' }" @click="openTab('phase-tab')">Phase Details</button>
+            <button class="tab-btn" :class="{ active: activeTab === 'health-tab' }" @click="openTab('health-tab')">System Health</button>
+            <button class="tab-btn" :class="{ active: activeTab === 'connectivity-tab' }" @click="openTab('connectivity-tab')">Connectivity</button>
+            <button class="tab-btn" :class="{ active: activeTab === 'events-tab' }" @click="openTab('events-tab')">Event Logs</button>
+            <button class="tab-btn" :class="{ active: activeTab === 'specs-tab' }" @click="openTab('specs-tab')">System Specs</button>
         </div>
 
         {% block content %}{% endblock %}

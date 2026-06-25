@@ -1,22 +1,5 @@
-let refreshTimer = null;
-
-function updateRefreshInterval() {
-    const rateInput = document.getElementById('refresh-rate');
-    if (!rateInput) return;
-    
-    const rate = parseInt(rateInput.value);
-    
-    // Clear existing timer
-    if (refreshTimer) {
-        clearInterval(refreshTimer);
-        refreshTimer = null;
-    }
-
-    // Set new timer if not Off and we are on the live tab
-    if (rate > 0 && document.getElementById('live-tab').classList.contains('active')) {
-        refreshTimer = setInterval(fetchMeters, rate);
-    }
-}
+let historyChartInstance = null;
+let effectivenessChartInstance = null;
 
 function formatPower(watts) {
     const absWatts = Math.abs(watts);
@@ -25,426 +8,26 @@ function formatPower(watts) {
     return watts.toFixed(0) + ' W';
 }
 
-function openTab(evt, tabName) {
-    const contents = document.getElementsByClassName("tab-content");
-    for (let i = 0; i < contents.length; i++) contents[i].classList.remove("active");
+function calculateLinearRegression(x, y) {
+    const n = x.length;
+    if (n === 0) return [];
     
-    const buttons = document.getElementsByClassName("tab-btn");
-    for (let i = 0; i < buttons.length; i++) buttons[i].classList.remove("active");
-    
-    const targetTab = document.getElementById(tabName);
-    if (targetTab) {
-        targetTab.classList.add("active");
-    }
-    
-    // Handle button activation (via click or manual call)
-    if (evt) {
-        evt.currentTarget.classList.add("active");
-    } else {
-        // Try to find the button associated with this tabName
-        const btn = Array.from(buttons).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabName));
-        if (btn) btn.classList.add("active");
-    }
-
-    // Persist tab state in URL hash
-    window.location.hash = tabName;
-
-    // Manage refresh timer on tab switch
-    if (tabName === 'live-tab') {
-        updateRefreshInterval();
-    } else if (refreshTimer) {
-        clearInterval(refreshTimer);
-        refreshTimer = null;
-    }
-
-    // Lazy load data for specific tabs
-    const tabEl = document.getElementById(tabName);
-    if (tabEl) {
-        if (tabName === 'summary-tab' && document.getElementById('summary-data').querySelector('.loading')) {
-            fetchSummary();
-        }
-        if (tabName === 'history-tab') {
-            fetchHistory();
-        }
-        if (tabName === 'health-tab' && document.getElementById('health-data').querySelector('.loading')) {
-            fetchHealth();
-        }
-        if (tabName === 'events-tab' && document.getElementById('events-data').querySelector('.loading')) {
-            fetchEvents();
-        }
-        if (tabName === 'phase-tab' && document.getElementById('phase-data').querySelector('.loading')) {
-            fetchPhases();
-        }
-        if (tabName === 'connectivity-tab' && document.getElementById('connectivity-data').querySelector('.loading')) {
-            fetchConnectivity();
-        }
-    }
-}
-
-async function fetchMeters() {
-    const rawPre = document.getElementById('raw-meters');
-    
-    try {
-        const res = await fetch('/api/meters');
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'API Error');
-        
-        if (rawPre) rawPre.textContent = JSON.stringify(data, null, 2);
-        
-        if (data.length < 2) return;
-
-        const prodPower = data[0].activePower || 0;
-        const gridPower = data[1].activePower || 0;
-        const consPower = prodPower + gridPower;
-
-        // Update Production
-        const valProd = document.getElementById('val-prod');
-        if (valProd) valProd.textContent = formatPower(prodPower);
-
-        // Update Grid
-        const isExporting = gridPower < 0;
-        const gridEl = document.getElementById('val-grid');
-        const labelGrid = document.getElementById('label-grid');
-        
-        if (labelGrid && gridEl) {
-            labelGrid.textContent = isExporting ? 'Exporting to Grid' : 'Importing from Grid';
-            gridEl.textContent = formatPower(Math.abs(gridPower));
-            gridEl.style.color = isExporting ? 'var(--primary)' : 'var(--danger)';
-        }
-
-        // Update Consumption
-        const valCons = document.getElementById('val-cons');
-        if (valCons) valCons.textContent = formatPower(consPower);
-
-    } catch (err) {
-        console.error('Fetch error:', err);
-    }
-}
-
-async function fetchSummary() {
-    const target = document.getElementById('summary-data');
-    const rawPre = document.getElementById('raw-summary');
-    const chartContainer = document.getElementById('effectiveness-chart-container');
-    if (!target) return;
-    target.innerHTML = '<p class="loading">Updating summary...</p>';
-    if (chartContainer) chartContainer.style.display = 'none';
-    
-    try {
-        const [resMeters, resHistory] = await Promise.all([
-            fetch('/api/meters'),
-            fetch('/api/history/daily')
-        ]);
-        
-        const data = await resMeters.json();
-        if (!resMeters.ok) throw new Error(data.error || 'API Error fetching meters');
-
-        if (rawPre) rawPre.textContent = JSON.stringify(data, null, 2);
-        
-        if (data.length < 2) {
-            target.innerHTML = '<p class="status-tag status-err">Error: Expected at least 2 meters for summary.</p>';
-            return;
-        }
-
-        function formatEnergy(wh) {
-            if (wh >= 1000000) return (wh / 1000000).toFixed(2) + ' MWh';
-            if (wh >= 1000) return (wh / 1000).toFixed(2) + ' kWh';
-            return wh.toFixed(0) + ' Wh';
-        }
-
-        const lifetimeProduction = data[0].actEnergyDlvd || 0;
-        const lifetimeImport = data[1].actEnergyDlvd || 0;
-        const lifetimeExport = data[1].actEnergyRcvd || 0;
-        const lifetimeConsumption = lifetimeProduction - lifetimeExport + lifetimeImport;
-        
-        const netOffset = lifetimeConsumption > 0 ? ((lifetimeProduction / lifetimeConsumption) * 100).toFixed(1) : '100.0';
-
-        let html = `
-        <div class="metric-cards-grid">
-            <div class="metric-card solar">
-                <div class="metric-card-title">Lifetime Solar</div>
-                <div class="metric-card-value">${formatEnergy(lifetimeProduction)}</div>
-            </div>
-            <div class="metric-card imported">
-                <div class="metric-card-title">Grid Imported</div>
-                <div class="metric-card-value">${formatEnergy(lifetimeImport)}</div>
-            </div>
-            <div class="metric-card exported">
-                <div class="metric-card-title">Grid Exported</div>
-                <div class="metric-card-value">${formatEnergy(lifetimeExport)}</div>
-            </div>
-            <div class="metric-card consumed">
-                <div class="metric-card-title">House Consumed</div>
-                <div class="metric-card-value">${formatEnergy(lifetimeConsumption)}</div>
-            </div>
-            <div class="metric-card offset">
-                <div class="metric-card-title">Net Solar Offset</div>
-                <div class="metric-card-value">${netOffset}%</div>
-            </div>
-        </div>`;
-        
-        target.innerHTML = html;
-
-        // Render daily effectiveness chart if history is available
-        if (resHistory.ok) {
-            const historyData = await resHistory.json();
-            if (historyData && historyData.length > 0) {
-                if (chartContainer) chartContainer.style.display = 'block';
-                renderEffectivenessChart(historyData);
-            }
-        }
-    } catch (err) {
-        target.innerHTML = `<p class="status-tag status-err">Error: ${err.message}</p>`;
-    }
-}
-
-async function fetchPhases() {
-    const target = document.getElementById('phase-data');
-    const rawPre = document.getElementById('raw-phases');
-    if (!target) return;
-    target.innerHTML = '<p class="loading">Updating phase details...</p>';
-    
-    try {
-        const res = await fetch('/api/meters');
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'API Error');
-
-        if (rawPre) rawPre.textContent = JSON.stringify(data, null, 2);
-        
-        let html = '';
-        data.forEach((meter, idx) => {
-            if (meter.eid === 1023410688 || !meter.channels) return;
-            const label = idx === 0 ? 'Production Meter' : 'Grid Meter';
-            html += `<h3>${label}</h3>`;
-            html += `<table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
-                <tr style="border-bottom: 2px solid #eee; text-align: left;">
-                    <th>Channel</th><th>Active Power</th><th>Voltage</th><th>Freq</th><th>Power Factor</th>
-                </tr>`;
-            meter.channels.forEach((ch, cidx) => {
-                html += `<tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 0.5rem;">Phase ${cidx + 1}</td>
-                    <td style="padding: 0.5rem;">${formatPower(ch.activePower || 0)}</td>
-                    <td style="padding: 0.5rem;">${(ch.voltage || 0).toFixed(2)} V</td>
-                    <td style="padding: 0.5rem;">${(ch.freq || 0).toFixed(2)} Hz</td>
-                    <td style="padding: 0.5rem;">${(ch.pwrFactor || 0).toFixed(2)}</td>
-                </tr>`;
-            });
-            html += '</table>';
-        });
-        target.innerHTML = html;
-    } catch (err) {
-        target.innerHTML = `<p class="status-tag status-err">Error: ${err.message}</p>`;
-    }
-}
-
-async function fetchHealth() {
-    const target = document.getElementById('health-data');
-    const summary = document.getElementById('health-summary');
-    const rawPre = document.getElementById('raw-inventory');
-    if (!target) return;
-    target.innerHTML = '<p class="loading">Updating inverter status...</p>';
-    
-    try {
-        const res = await fetch('/api/inventory');
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'API Error');
-
-        if (rawPre) rawPre.textContent = JSON.stringify(data, null, 2);
-        const pcuGroup = data.find(g => g.type === 'PCU');
-        if (!pcuGroup) throw new Error('No inverters found in inventory');
-
-        const inverters = pcuGroup.devices;
-        const total = inverters.length;
-        const operating = inverters.filter(i => i.operating).length;
-        const producing = inverters.filter(i => i.producing).length;
-        const communicating = inverters.filter(i => i.communicating).length;
-
-        if (summary) {
-            summary.innerHTML = `
-                <span class="status-tag ${operating === total ? 'status-ok' : 'status-err'}">Operating: ${operating}/${total}</span>
-                <span class="status-tag ${producing === total ? 'status-ok' : 'status-err'}">Producing: ${producing}/${total}</span>
-                <span class="status-tag ${communicating === total ? 'status-ok' : 'status-err'}">Communicating: ${communicating}/${total}</span>
-            `;
-        }
-
-        let html = '';
-        inverters.forEach(inv => {
-            const statusClass = (inv.operating && inv.producing && inv.communicating) ? 'status-ok' : 'status-err';
-            html += `
-                <div style="border: 1px solid #eee; padding: 0.8rem; border-radius: 4px; background: white; font-size: 0.85rem;">
-                    <div style="font-weight: bold; margin-bottom: 0.3rem;">SN: ${inv.serial_num}</div>
-                    <div style="color: #666; margin-bottom: 0.5rem;">${inv.part_num}</div>
-                    <div class="status-tag ${statusClass}" style="width: 100%; text-align: center; box-sizing: border-box;">
-                        ${inv.operating ? 'ONLINE' : 'OFFLINE'}
-                    </div>
-                </div>
-            `;
-        });
-        target.innerHTML = html;
-    } catch (err) {
-        target.innerHTML = `<p class="status-tag status-err">Error: ${err.message}</p>`;
-    }
-}
-
-async function fetchConnectivity() {
-    const target = document.getElementById('connectivity-data');
-    const rawPre = document.getElementById('raw-connectivity');
-    if (!target) return;
-    target.innerHTML = '<p class="loading">Updating connectivity status...</p>';
-    
-    try {
-        const res = await fetch('/api/connectivity');
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'API Error');
-
-        if (rawPre) rawPre.textContent = JSON.stringify(data, null, 2);
-        const conn = data.connection;
-        const getStatusTag = (val) => {
-            const ok = ['connected', 'ok', 'configured', 'enabled'].includes(val.toLowerCase());
-            return `<span class="status-tag ${ok ? 'status-ok' : 'status-err'}">${val.toUpperCase()}</span>`;
-        };
-
-        let html = '<div class="responsive-grid">';
-        html += `
-            <div class="data-box" style="margin-top:0;">
-                <p><strong>MQTT State:</strong> ${getStatusTag(conn.mqtt_state)}</p>
-                <p><strong>Provisioning:</strong> ${getStatusTag(conn.prov_state)}</p>
-                <p><strong>Auth State:</strong> ${getStatusTag(conn.auth_state)}</p>
-            </div>
-            <div class="data-box" style="margin-top:0;">
-                <p><strong>Cloud Stream:</strong> ${getStatusTag(conn.sc_stream)}</p>
-                <p><strong>Debug Stream:</strong> ${getStatusTag(conn.sc_debug)}</p>
-                <p><strong>Last Meter Update:</strong> ${new Date(data.meters.last_update * 1000).toLocaleString()}</p>
-            </div>
-        `;
-        html += '</div>';
-        target.innerHTML = html;
-    } catch (err) {
-        target.innerHTML = `<p class="status-tag status-err">Error: ${err.message}</p>`;
-    }
-}
-
-async function fetchEvents() {
-    const target = document.getElementById('events-data');
-    const rawPre = document.getElementById('raw-events');
-    if (!target) return;
-    target.innerHTML = '<p class="loading">Updating system alerts...</p>';
-    
-    try {
-        const res = await fetch('/api/events');
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'API Error');
-
-        if (rawPre) rawPre.textContent = JSON.stringify(data, null, 2);
-        const alerts = data.alerts || [];
-        if (alerts.length === 0) {
-            target.innerHTML = '<p style="color: #28a745; font-weight: bold;">✓ No active system alerts.</p>';
-            return;
-        }
-
-        let html = '<ul style="list-style: none; padding: 0;">';
-        alerts.forEach(alert => {
-            html += `
-                <li style="padding: 1rem; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
-                    <span class="status-tag status-err">ALERT</span>
-                    <span>${alert}</span>
-                </li>
-            `;
-        });
-        html += '</ul>';
-        target.innerHTML = html;
-    } catch (err) {
-        target.innerHTML = `<p class="status-tag status-err">Error: ${err.message}</p>`;
-    }
-}
-
-// Initial load
-window.addEventListener('DOMContentLoaded', () => {
-    // Check for hash in URL
-    const hash = window.location.hash.substring(1); // remove #
-    if (hash && document.getElementById(hash)) {
-        openTab(null, hash);
-    } else {
-        // Default to live tab if no valid hash
-        openTab(null, 'live-tab');
-        fetchMeters();
-        updateRefreshInterval();
-    }
-});
-
-let historyChartInstance = null;
-
-async function syncDatabase() {
-    const btn = document.querySelector("#history-tab .refresh-btn");
-    if (btn) {
-        btn.textContent = "Syncing...";
-        btn.disabled = true;
+    let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+    for (let i = 0; i < n; i++) {
+        sumX += x[i];
+        sumY += y[i];
+        sumXY += x[i] * y[i];
+        sumXX += x[i] * x[i];
     }
     
-    try {
-        const res = await fetch('/api/history/refresh', { method: 'POST' });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Sync Error');
-        await fetchHistory();
-    } catch (err) {
-        console.error("Sync error:", err);
-        alert("Failed to sync database: " + err.message);
-    } finally {
-        if (btn) {
-            btn.textContent = "Sync Database Now";
-            btn.disabled = false;
-        }
+    const denominator = (n * sumXX - sumX * sumX);
+    if (denominator === 0) {
+        return y;
     }
-}
-
-async function fetchHistory() {
-    const tableBody = document.getElementById('history-table-body');
-    if (tableBody) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="loading" style="padding: 1.5rem; text-align: center;">Updating history data...</td></tr>';
-    }
+    const slope = (n * sumXY - sumX * sumY) / denominator;
+    const intercept = (sumY - slope * sumX) / n;
     
-    try {
-        const res = await fetch('/api/history/daily');
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'API Error');
-        
-        if (data.length === 0) {
-            if (tableBody) {
-                tableBody.innerHTML = '<tr><td colspan="6" style="padding: 1.5rem; text-align: center; color: #888;">No historical data in database yet. Try running "Sync Database Now".</td></tr>';
-            }
-            return;
-        }
-        
-        // Render Chart
-        renderHistoryChart(data);
-        
-        // Render Table
-        if (tableBody) {
-            let html = '';
-            const sortedData = [...data].reverse();
-            sortedData.forEach(row => {
-                const statusTag = row.is_interpolated 
-                    ? '<span class="status-tag" style="background: var(--warning-light); color: #92400e; border: 1px solid #fef3c7;">Estimated</span>' 
-                    : '<span class="status-tag status-ok">Normal</span>';
-                
-                html += `
-                    <tr style="border-bottom: 1px solid var(--border-color);">
-                        <td style="padding: 0.8rem 0.5rem; font-weight: bold; color: var(--text-main);">${row.date}</td>
-                        <td style="padding: 0.8rem 0.5rem; color: var(--success); font-weight: 500;">${row.production_kwh.toFixed(2)} kWh</td>
-                        <td style="padding: 0.8rem 0.5rem; color: var(--primary); font-weight: 500;">${row.export_kwh.toFixed(2)} kWh</td>
-                        <td style="padding: 0.8rem 0.5rem; color: var(--danger); font-weight: 500;">${row.import_kwh.toFixed(2)} kWh</td>
-                        <td style="padding: 0.8rem 0.5rem; color: var(--accent); font-weight: bold;">${row.consumption_kwh.toFixed(2)} kWh</td>
-                        <td style="padding: 0.8rem 0.5rem;">${statusTag}</td>
-                    </tr>
-                `;
-            });
-            tableBody.innerHTML = html;
-        }
-    } catch (err) {
-        console.error("Fetch history error:", err);
-        if (tableBody) {
-            tableBody.innerHTML = `<tr><td colspan="6" class="status-tag status-err" style="display: table-cell; text-align: center; padding: 1rem; margin: 1rem;">Error loading history: ${err.message}</td></tr>`;
-        }
-    }
+    return x.map(val => slope * val + intercept);
 }
 
 function renderHistoryChart(data) {
@@ -538,30 +121,6 @@ function renderHistoryChart(data) {
     });
 }
 
-let effectivenessChartInstance = null;
-
-function calculateLinearRegression(x, y) {
-    const n = x.length;
-    if (n === 0) return [];
-    
-    let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
-    for (let i = 0; i < n; i++) {
-        sumX += x[i];
-        sumY += y[i];
-        sumXY += x[i] * y[i];
-        sumXX += x[i] * x[i];
-    }
-    
-    const denominator = (n * sumXX - sumX * sumX);
-    if (denominator === 0) {
-        return y;
-    }
-    const slope = (n * sumXY - sumX * sumY) / denominator;
-    const intercept = (sumY - slope * sumX) / n;
-    
-    return x.map(val => slope * val + intercept);
-}
-
 function renderEffectivenessChart(data) {
     const canvas = document.getElementById('effectivenessChart');
     if (!canvas) return;
@@ -576,15 +135,12 @@ function renderEffectivenessChart(data) {
     const productions = data.map(d => d.production_kwh);
     const imports = data.map(d => d.import_kwh);
     
-    // Calculate effectiveness: (production / consumption) * 100
-    // and handle cases where consumption is 0 or negative
     const effectiveness = data.map(d => {
         const cons = d.consumption_kwh;
         if (cons <= 0) return 0;
         return (d.production_kwh / cons) * 100;
     });
 
-    // Compute linear regression trend line for effectiveness
     const indices = effectiveness.map((_, idx) => idx);
     const trendValues = calculateLinearRegression(indices, effectiveness);
     
@@ -712,3 +268,323 @@ function renderEffectivenessChart(data) {
     });
 }
 
+document.addEventListener('alpine:init', () => {
+    Alpine.data('dashboard', () => ({
+        activeTab: 'live-tab',
+        refreshRate: 3000,
+        
+        // Live power state
+        meters: [],
+        prodPower: 0,
+        gridPower: 0,
+        consPower: 0,
+        rawMeters: 'No data yet.',
+        loadingMeters: false,
+        
+        // Summary state
+        lifetimeSolar: '',
+        lifetimeImported: '',
+        lifetimeExported: '',
+        lifetimeConsumed: '',
+        netSolarOffset: '0.0%',
+        rawSummary: 'No data yet.',
+        loadingSummary: false,
+        showEffectivenessChart: false,
+        
+        // History state
+        historyLogs: [],
+        rawHistory: 'No data yet.',
+        loadingHistory: false,
+        
+        // Phases state
+        phases: [],
+        rawPhases: 'No data yet.',
+        loadingPhases: false,
+        
+        // Health state
+        healthSummary: {
+            operating: 0,
+            producing: 0,
+            communicating: 0,
+            total: 0
+        },
+        inverters: [],
+        rawInventory: 'No data yet.',
+        loadingHealth: false,
+        
+        // Connectivity state
+        connectivity: null,
+        rawConnectivity: 'No data yet.',
+        loadingConnectivity: false,
+        
+        // Events state
+        events: [],
+        rawEvents: 'No data yet.',
+        loadingEvents: false,
+        
+        // Timer for auto-refresh
+        refreshTimer: null,
+        
+        init() {
+            // Load initial tab from hash
+            const hash = window.location.hash.replace('#', '');
+            if (hash && ['live-tab', 'summary-tab', 'history-tab', 'phase-tab', 'health-tab', 'connectivity-tab', 'events-tab', 'specs-tab'].includes(hash)) {
+                this.activeTab = hash;
+            } else {
+                this.activeTab = 'live-tab';
+            }
+            
+            // Watch tab changes to load data and handle browser history
+            this.$watch('activeTab', (newVal) => {
+                window.location.hash = newVal;
+                this.handleTabSwitch(newVal);
+            });
+            
+            // Trigger load for the initial active tab
+            this.handleTabSwitch(this.activeTab);
+        },
+        
+        openTab(tabName) {
+            this.activeTab = tabName;
+        },
+        
+        handleTabSwitch(tabName) {
+            // Manage refresh timers
+            if (tabName === 'live-tab') {
+                this.fetchMeters();
+                this.updateRefreshInterval();
+            } else {
+                this.stopRefreshTimer();
+            }
+            
+            // Trigger lazy loading
+            this.triggerTabLoad(tabName);
+        },
+        
+        triggerTabLoad(tabName) {
+            if (tabName === 'summary-tab') this.fetchSummary();
+            if (tabName === 'history-tab') this.fetchHistory();
+            if (tabName === 'phase-tab') this.fetchPhases();
+            if (tabName === 'health-tab') this.fetchHealth();
+            if (tabName === 'connectivity-tab') this.fetchConnectivity();
+            if (tabName === 'events-tab') this.fetchEvents();
+        },
+        
+        updateRefreshInterval() {
+            this.stopRefreshTimer();
+            if (this.refreshRate > 0 && this.activeTab === 'live-tab') {
+                this.refreshTimer = setInterval(() => this.fetchMeters(), this.refreshRate);
+            }
+        },
+        
+        stopRefreshTimer() {
+            if (this.refreshTimer) {
+                clearInterval(this.refreshTimer);
+                this.refreshTimer = null;
+            }
+        },
+        
+        formatPower(watts) {
+            return formatPower(watts);
+        },
+        
+        formatDate(timestamp) {
+            if (!timestamp) return 'Never';
+            return new Date(timestamp * 1000).toLocaleString();
+        },
+        
+        isOkState(val) {
+            if (!val) return false;
+            return ['connected', 'ok', 'configured', 'enabled'].includes(val.toLowerCase());
+        },
+        
+        async fetchMeters() {
+            this.loadingMeters = true;
+            try {
+                const res = await fetch('/api/meters');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'API Error');
+                
+                this.rawMeters = JSON.stringify(data, null, 2);
+                if (data.length >= 2) {
+                    this.meters = data;
+                    this.prodPower = data[0].activePower || 0;
+                    this.gridPower = data[1].activePower || 0;
+                    this.consPower = this.prodPower + this.gridPower;
+                }
+            } catch (err) {
+                console.error('Fetch meters error:', err);
+            } finally {
+                this.loadingMeters = false;
+            }
+        },
+        
+        async fetchSummary() {
+            this.loadingSummary = true;
+            this.showEffectivenessChart = false;
+            try {
+                const [resMeters, resHistory] = await Promise.all([
+                    fetch('/api/meters'),
+                    fetch('/api/history/daily')
+                ]);
+                
+                const data = await resMeters.json();
+                if (!resMeters.ok) throw new Error(data.error || 'API Error fetching meters');
+
+                this.rawSummary = JSON.stringify(data, null, 2);
+                
+                if (data.length >= 2) {
+                    const lifetimeProduction = data[0].actEnergyDlvd || 0;
+                    const lifetimeImport = data[1].actEnergyDlvd || 0;
+                    const lifetimeExport = data[1].actEnergyRcvd || 0;
+                    const lifetimeConsumption = lifetimeProduction - lifetimeExport + lifetimeImport;
+                    
+                    const formatEnergy = (wh) => {
+                        if (wh >= 1000000) return (wh / 1000000).toFixed(2) + ' MWh';
+                        if (wh >= 1000) return (wh / 1000).toFixed(2) + ' kWh';
+                        return wh.toFixed(0) + ' Wh';
+                    };
+                    
+                    this.lifetimeSolar = formatEnergy(lifetimeProduction);
+                    this.lifetimeImported = formatEnergy(lifetimeImport);
+                    this.lifetimeExported = formatEnergy(lifetimeExport);
+                    this.lifetimeConsumed = formatEnergy(lifetimeConsumption);
+                    this.netSolarOffset = lifetimeConsumption > 0 
+                        ? ((lifetimeProduction / lifetimeConsumption) * 100).toFixed(1) + '%' 
+                        : '100.0%';
+                }
+
+                if (resHistory.ok) {
+                    const historyData = await resHistory.json();
+                    if (historyData && historyData.length > 0) {
+                        this.showEffectivenessChart = true;
+                        this.$nextTick(() => {
+                            renderEffectivenessChart(historyData);
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Fetch summary error:', err);
+            } finally {
+                this.loadingSummary = false;
+            }
+        },
+        
+        async fetchHistory() {
+            this.loadingHistory = true;
+            try {
+                const res = await fetch('/api/history/daily');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'API Error');
+                
+                this.historyLogs = data;
+                this.rawHistory = JSON.stringify(data, null, 2);
+                
+                if (data.length > 0) {
+                    this.$nextTick(() => {
+                        renderHistoryChart(data);
+                    });
+                }
+            } catch (err) {
+                console.error('Fetch history error:', err);
+            } finally {
+                this.loadingHistory = false;
+            }
+        },
+        
+        async syncDatabase() {
+            this.loadingHistory = true;
+            try {
+                const res = await fetch('/api/history/refresh', { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Sync Error');
+                await this.fetchHistory();
+            } catch (err) {
+                console.error("Sync error:", err);
+                alert("Failed to sync database: " + err.message);
+                this.loadingHistory = false;
+            }
+        },
+        
+        async fetchPhases() {
+            this.loadingPhases = true;
+            try {
+                const res = await fetch('/api/meters');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'API Error');
+
+                this.rawPhases = JSON.stringify(data, null, 2);
+                this.phases = data.filter(m => m.eid !== 1023410688 && m.channels);
+            } catch (err) {
+                console.error('Fetch phases error:', err);
+            } finally {
+                this.loadingPhases = false;
+            }
+        },
+        
+        async fetchHealth() {
+            this.loadingHealth = true;
+            try {
+                const res = await fetch('/api/inventory');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'API Error');
+
+                this.rawInventory = JSON.stringify(data, null, 2);
+                const pcuGroup = data.find(g => g.type === 'PCU');
+                if (!pcuGroup) throw new Error('No inverters found in inventory');
+
+                this.inverters = pcuGroup.devices || [];
+                this.healthSummary = {
+                    total: this.inverters.length,
+                    operating: this.inverters.filter(i => i.operating).length,
+                    producing: this.inverters.filter(i => i.producing).length,
+                    communicating: this.inverters.filter(i => i.communicating).length
+                };
+            } catch (err) {
+                console.error('Fetch health error:', err);
+            } finally {
+                this.loadingHealth = false;
+            }
+        },
+        
+        async fetchConnectivity() {
+            this.loadingConnectivity = true;
+            try {
+                const res = await fetch('/api/connectivity');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'API Error');
+
+                this.rawConnectivity = JSON.stringify(data, null, 2);
+                const conn = data.connection;
+                this.connectivity = {
+                    mqtt_state: conn.mqtt_state || 'unknown',
+                    prov_state: conn.prov_state || 'unknown',
+                    auth_state: conn.auth_state || 'unknown',
+                    sc_stream: conn.sc_stream || 'unknown',
+                    sc_debug: conn.sc_debug || 'unknown',
+                    meters_last_update: data.meters?.last_update || null
+                };
+            } catch (err) {
+                console.error('Fetch connectivity error:', err);
+            } finally {
+                this.loadingConnectivity = false;
+            }
+        },
+        
+        async fetchEvents() {
+            this.loadingEvents = true;
+            try {
+                const res = await fetch('/api/events');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'API Error');
+
+                this.rawEvents = JSON.stringify(data, null, 2);
+                this.events = data.alerts || [];
+            } catch (err) {
+                console.error('Fetch events error:', err);
+            } finally {
+                this.loadingEvents = false;
+            }
+        }
+    }));
+});
