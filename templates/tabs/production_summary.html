@@ -2,12 +2,27 @@
     <h2>System Summary</h2>
     <button class="refresh-btn" onclick="fetchSummary()">Refresh Summary</button>
 </div>
-<div id="summary-data" class="data-box">
+<div id="summary-data">
     <p class="loading">Click refresh or open tab to load summary data.</p>
 </div>
-<div class="data-box">
+
+<!-- Daily Solar Effectiveness Chart -->
+<div id="effectiveness-chart-container" class="data-box" style="background: white; border: 1px solid #ddd; padding: 1.5rem; margin-top: 1.5rem; display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
+        <h3 style="margin: 0; color: #ff6600;">Daily Solar vs. Grid Usage & Effectiveness</h3>
+        <span style="font-size: 0.85rem; color: #666;">
+            Effectiveness = (Solar Production / House Consumption) × 100%
+        </span>
+    </div>
+    <div style="width: 100%; height: 350px; position: relative;">
+        <canvas id="effectivenessChart"></canvas>
+    </div>
+</div>
+
+<div class="data-box" style="margin-top: 1.5rem;">
     <details>
         <summary style="cursor: pointer; font-weight: bold; color: #ff6600;">Raw Summary JSON</summary>
         <pre id="raw-summary" style="margin-top: 1rem;">No data yet.</pre>
     </details>
 </div>
+

@@ -124,13 +124,19 @@ async function fetchMeters() {
 async function fetchSummary() {
     const target = document.getElementById('summary-data');
     const rawPre = document.getElementById('raw-summary');
+    const chartContainer = document.getElementById('effectiveness-chart-container');
     if (!target) return;
     target.innerHTML = '<p class="loading">Updating summary...</p>';
+    if (chartContainer) chartContainer.style.display = 'none';
     
     try {
-        const res = await fetch('/api/meters');
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'API Error');
+        const [resMeters, resHistory] = await Promise.all([
+            fetch('/api/meters'),
+            fetch('/api/history/daily')
+        ]);
+        
+        const data = await resMeters.json();
+        if (!resMeters.ok) throw new Error(data.error || 'API Error fetching meters');
 
         if (rawPre) rawPre.textContent = JSON.stringify(data, null, 2);
         
@@ -149,27 +155,43 @@ async function fetchSummary() {
         const lifetimeImport = data[1].actEnergyDlvd || 0;
         const lifetimeExport = data[1].actEnergyRcvd || 0;
         const lifetimeConsumption = lifetimeProduction - lifetimeExport + lifetimeImport;
+        
+        const netOffset = lifetimeConsumption > 0 ? ((lifetimeProduction / lifetimeConsumption) * 100).toFixed(1) : '100.0';
 
-        let html = '<div class="responsive-grid">';
-        html += `
-            <div class="data-box" style="margin-top: 0;">
-                <h4 style="margin-top: 0; color: #28a745;">Lifetime Solar Production</h4>
-                <p style="font-size: 1.1rem; margin-bottom: 0;">Total Generated: <strong>${formatEnergy(lifetimeProduction)}</strong></p>
+        let html = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1rem;">
+            <div class="data-box" style="margin: 0; padding: 1.2rem 1rem; border-left: 4px solid #28a745; background: #fafafa; border-radius: 6px;">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: #666; font-weight: bold; letter-spacing: 0.5px;">Lifetime Solar</div>
+                <div style="font-size: 1.4rem; font-weight: bold; color: #28a745; margin-top: 0.3rem;">${formatEnergy(lifetimeProduction)}</div>
             </div>
-            <div class="data-box" style="margin-top: 0;">
-                <h4 style="margin-top: 0; color: #007bff;">Grid Lifetime Totals</h4>
-                <p style="font-size: 1.1rem; margin-bottom: 0;">
-                    Total Imported: <strong style="color: #dc3545;">${formatEnergy(lifetimeImport)}</strong><br>
-                    Total Exported: <strong style="color: #007bff;">${formatEnergy(lifetimeExport)}</strong>
-                </p>
+            <div class="data-box" style="margin: 0; padding: 1.2rem 1rem; border-left: 4px solid #dc3545; background: #fafafa; border-radius: 6px;">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: #666; font-weight: bold; letter-spacing: 0.5px;">Grid Imported</div>
+                <div style="font-size: 1.4rem; font-weight: bold; color: #dc3545; margin-top: 0.3rem;">${formatEnergy(lifetimeImport)}</div>
             </div>
-            <div class="data-box" style="margin-top: 0; grid-column: span 2; background: #fff8f0; border: 1px solid #ff6600;">
-                <h4 style="margin-top: 0; color: #ff6600;">House Lifetime Consumption</h4>
-                <p style="font-size: 1.2rem; margin-bottom: 0;">Total Energy Used: <strong>${formatEnergy(lifetimeConsumption)}</strong></p>
+            <div class="data-box" style="margin: 0; padding: 1.2rem 1rem; border-left: 4px solid #007bff; background: #fafafa; border-radius: 6px;">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: #666; font-weight: bold; letter-spacing: 0.5px;">Grid Exported</div>
+                <div style="font-size: 1.4rem; font-weight: bold; color: #007bff; margin-top: 0.3rem;">${formatEnergy(lifetimeExport)}</div>
             </div>
-        `;
-        html += '</div>';
+            <div class="data-box" style="margin: 0; padding: 1.2rem 1rem; border-left: 4px solid #ff6600; background: #fafafa; border-radius: 6px;">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: #666; font-weight: bold; letter-spacing: 0.5px;">House Consumed</div>
+                <div style="font-size: 1.4rem; font-weight: bold; color: #ff6600; margin-top: 0.3rem;">${formatEnergy(lifetimeConsumption)}</div>
+            </div>
+            <div class="data-box" style="margin: 0; padding: 1.2rem 1rem; border-left: 4px solid #6f42c1; background: #fafafa; border-radius: 6px;">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: #666; font-weight: bold; letter-spacing: 0.5px;">Net Solar Offset</div>
+                <div style="font-size: 1.4rem; font-weight: bold; color: #6f42c1; margin-top: 0.3rem;">${netOffset}%</div>
+            </div>
+        </div>`;
+        
         target.innerHTML = html;
+
+        // Render daily effectiveness chart if history is available
+        if (resHistory.ok) {
+            const historyData = await resHistory.json();
+            if (historyData && historyData.length > 0) {
+                if (chartContainer) chartContainer.style.display = 'block';
+                renderEffectivenessChart(historyData);
+            }
+        }
     } catch (err) {
         target.innerHTML = `<p class="status-tag status-err">Error: ${err.message}</p>`;
     }
@@ -515,3 +537,178 @@ function renderHistoryChart(data) {
         }
     });
 }
+
+let effectivenessChartInstance = null;
+
+function calculateLinearRegression(x, y) {
+    const n = x.length;
+    if (n === 0) return [];
+    
+    let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+    for (let i = 0; i < n; i++) {
+        sumX += x[i];
+        sumY += y[i];
+        sumXY += x[i] * y[i];
+        sumXX += x[i] * x[i];
+    }
+    
+    const denominator = (n * sumXX - sumX * sumX);
+    if (denominator === 0) {
+        return y;
+    }
+    const slope = (n * sumXY - sumX * sumY) / denominator;
+    const intercept = (sumY - slope * sumX) / n;
+    
+    return x.map(val => slope * val + intercept);
+}
+
+function renderEffectivenessChart(data) {
+    const canvas = document.getElementById('effectivenessChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    if (effectivenessChartInstance) {
+        effectivenessChartInstance.destroy();
+    }
+    
+    const dates = data.map(d => d.date);
+    const productions = data.map(d => d.production_kwh);
+    const imports = data.map(d => d.import_kwh);
+    
+    // Calculate effectiveness: (production / consumption) * 100
+    // and handle cases where consumption is 0 or negative
+    const effectiveness = data.map(d => {
+        const cons = d.consumption_kwh;
+        if (cons <= 0) return 0;
+        return (d.production_kwh / cons) * 100;
+    });
+
+    // Compute linear regression trend line for effectiveness
+    const indices = effectiveness.map((_, idx) => idx);
+    const trendValues = calculateLinearRegression(indices, effectiveness);
+    
+    effectivenessChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: 'Solar Production (kWh)',
+                    type: 'bar',
+                    data: productions,
+                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                    borderColor: '#28a745',
+                    borderWidth: 1.5,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Grid Import (kWh)',
+                    type: 'bar',
+                    data: imports,
+                    backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                    borderColor: '#dc3545',
+                    borderWidth: 1.5,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Solar Effectiveness (%)',
+                    type: 'line',
+                    data: effectiveness,
+                    borderColor: '#6f42c1',
+                    backgroundColor: 'rgba(111, 66, 193, 0.05)',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0.3,
+                    yAxisID: 'y1'
+                },
+                {
+                    label: 'Effectiveness Trend Line',
+                    type: 'line',
+                    data: trendValues,
+                    borderColor: 'rgba(111, 66, 193, 0.6)',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [6, 6],
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Daily Energy (kWh)',
+                        font: { weight: 'bold' }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    max: Math.max(100, Math.ceil(Math.max(...effectiveness) / 50) * 50),
+                    title: {
+                        display: true,
+                        text: 'Solar Effectiveness (%)',
+                        font: { weight: 'bold' }
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        boxWidth: 12,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                if (context.datasetIndex < 2) {
+                                    label += context.parsed.y.toFixed(2) + ' kWh';
+                                } else {
+                                    label += context.parsed.y.toFixed(1) + '%';
+                                }
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
