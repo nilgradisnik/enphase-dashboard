@@ -109,7 +109,7 @@ async function fetchMeters() {
         if (labelGrid && gridEl) {
             labelGrid.textContent = isExporting ? 'Exporting to Grid' : 'Importing from Grid';
             gridEl.textContent = formatPower(Math.abs(gridPower));
-            gridEl.style.color = isExporting ? '#007bff' : '#dc3545';
+            gridEl.style.color = isExporting ? 'var(--primary)' : 'var(--danger)';
         }
 
         // Update Consumption
@@ -159,26 +159,26 @@ async function fetchSummary() {
         const netOffset = lifetimeConsumption > 0 ? ((lifetimeProduction / lifetimeConsumption) * 100).toFixed(1) : '100.0';
 
         let html = `
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1rem;">
-            <div class="data-box" style="margin: 0; padding: 1.2rem 1rem; border-left: 4px solid #28a745; background: #fafafa; border-radius: 6px;">
-                <div style="font-size: 0.8rem; text-transform: uppercase; color: #666; font-weight: bold; letter-spacing: 0.5px;">Lifetime Solar</div>
-                <div style="font-size: 1.4rem; font-weight: bold; color: #28a745; margin-top: 0.3rem;">${formatEnergy(lifetimeProduction)}</div>
+        <div class="metric-cards-grid">
+            <div class="metric-card solar">
+                <div class="metric-card-title">Lifetime Solar</div>
+                <div class="metric-card-value">${formatEnergy(lifetimeProduction)}</div>
             </div>
-            <div class="data-box" style="margin: 0; padding: 1.2rem 1rem; border-left: 4px solid #dc3545; background: #fafafa; border-radius: 6px;">
-                <div style="font-size: 0.8rem; text-transform: uppercase; color: #666; font-weight: bold; letter-spacing: 0.5px;">Grid Imported</div>
-                <div style="font-size: 1.4rem; font-weight: bold; color: #dc3545; margin-top: 0.3rem;">${formatEnergy(lifetimeImport)}</div>
+            <div class="metric-card imported">
+                <div class="metric-card-title">Grid Imported</div>
+                <div class="metric-card-value">${formatEnergy(lifetimeImport)}</div>
             </div>
-            <div class="data-box" style="margin: 0; padding: 1.2rem 1rem; border-left: 4px solid #007bff; background: #fafafa; border-radius: 6px;">
-                <div style="font-size: 0.8rem; text-transform: uppercase; color: #666; font-weight: bold; letter-spacing: 0.5px;">Grid Exported</div>
-                <div style="font-size: 1.4rem; font-weight: bold; color: #007bff; margin-top: 0.3rem;">${formatEnergy(lifetimeExport)}</div>
+            <div class="metric-card exported">
+                <div class="metric-card-title">Grid Exported</div>
+                <div class="metric-card-value">${formatEnergy(lifetimeExport)}</div>
             </div>
-            <div class="data-box" style="margin: 0; padding: 1.2rem 1rem; border-left: 4px solid #ff6600; background: #fafafa; border-radius: 6px;">
-                <div style="font-size: 0.8rem; text-transform: uppercase; color: #666; font-weight: bold; letter-spacing: 0.5px;">House Consumed</div>
-                <div style="font-size: 1.4rem; font-weight: bold; color: #ff6600; margin-top: 0.3rem;">${formatEnergy(lifetimeConsumption)}</div>
+            <div class="metric-card consumed">
+                <div class="metric-card-title">House Consumed</div>
+                <div class="metric-card-value">${formatEnergy(lifetimeConsumption)}</div>
             </div>
-            <div class="data-box" style="margin: 0; padding: 1.2rem 1rem; border-left: 4px solid #6f42c1; background: #fafafa; border-radius: 6px;">
-                <div style="font-size: 0.8rem; text-transform: uppercase; color: #666; font-weight: bold; letter-spacing: 0.5px;">Net Solar Offset</div>
-                <div style="font-size: 1.4rem; font-weight: bold; color: #6f42c1; margin-top: 0.3rem;">${netOffset}%</div>
+            <div class="metric-card offset">
+                <div class="metric-card-title">Net Solar Offset</div>
+                <div class="metric-card-value">${netOffset}%</div>
             </div>
         </div>`;
         
@@ -423,16 +423,16 @@ async function fetchHistory() {
             const sortedData = [...data].reverse();
             sortedData.forEach(row => {
                 const statusTag = row.is_interpolated 
-                    ? '<span class="status-tag" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba;">Estimated</span>' 
-                    : '<span class="status-tag" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;">Normal</span>';
+                    ? '<span class="status-tag" style="background: var(--warning-light); color: #92400e; border: 1px solid #fef3c7;">Estimated</span>' 
+                    : '<span class="status-tag status-ok">Normal</span>';
                 
                 html += `
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 0.8rem 0.5rem; font-weight: bold;">${row.date}</td>
-                        <td style="padding: 0.8rem 0.5rem; color: #28a745;">${row.production_kwh.toFixed(2)} kWh</td>
-                        <td style="padding: 0.8rem 0.5rem; color: #007bff;">${row.export_kwh.toFixed(2)} kWh</td>
-                        <td style="padding: 0.8rem 0.5rem; color: #dc3545;">${row.import_kwh.toFixed(2)} kWh</td>
-                        <td style="padding: 0.8rem 0.5rem; color: #ff6600; font-weight: bold;">${row.consumption_kwh.toFixed(2)} kWh</td>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.8rem 0.5rem; font-weight: bold; color: var(--text-main);">${row.date}</td>
+                        <td style="padding: 0.8rem 0.5rem; color: var(--success); font-weight: 500;">${row.production_kwh.toFixed(2)} kWh</td>
+                        <td style="padding: 0.8rem 0.5rem; color: var(--primary); font-weight: 500;">${row.export_kwh.toFixed(2)} kWh</td>
+                        <td style="padding: 0.8rem 0.5rem; color: var(--danger); font-weight: 500;">${row.import_kwh.toFixed(2)} kWh</td>
+                        <td style="padding: 0.8rem 0.5rem; color: var(--accent); font-weight: bold;">${row.consumption_kwh.toFixed(2)} kWh</td>
                         <td style="padding: 0.8rem 0.5rem;">${statusTag}</td>
                     </tr>
                 `;
@@ -471,29 +471,29 @@ function renderHistoryChart(data) {
                 {
                     label: 'Solar Production (kWh)',
                     data: productions,
-                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
-                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                    borderColor: '#10b981',
                     borderWidth: 1
                 },
                 {
                     label: 'Grid Export (kWh)',
                     data: exports,
-                    backgroundColor: 'rgba(0, 123, 255, 0.7)',
-                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(79, 70, 229, 0.7)',
+                    borderColor: '#4f46e5',
                     borderWidth: 1
                 },
                 {
                     label: 'Grid Import (kWh)',
                     data: imports,
-                    backgroundColor: 'rgba(220, 53, 69, 0.7)',
-                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                    borderColor: '#ef4444',
                     borderWidth: 1
                 },
                 {
                     label: 'House Consumption (kWh)',
                     data: consumptions,
-                    backgroundColor: 'rgba(255, 102, 0, 0.7)',
-                    borderColor: '#ff6600',
+                    backgroundColor: 'rgba(71, 85, 105, 0.7)',
+                    borderColor: '#475569',
                     borderWidth: 1
                 }
             ]
@@ -597,8 +597,8 @@ function renderEffectivenessChart(data) {
                     label: 'Solar Production (kWh)',
                     type: 'bar',
                     data: productions,
-                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
-                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                    borderColor: '#10b981',
                     borderWidth: 1.5,
                     yAxisID: 'y'
                 },
@@ -606,8 +606,8 @@ function renderEffectivenessChart(data) {
                     label: 'Grid Import (kWh)',
                     type: 'bar',
                     data: imports,
-                    backgroundColor: 'rgba(220, 53, 69, 0.2)',
-                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                    borderColor: '#ef4444',
                     borderWidth: 1.5,
                     yAxisID: 'y'
                 },
@@ -615,8 +615,8 @@ function renderEffectivenessChart(data) {
                     label: 'Solar Effectiveness (%)',
                     type: 'line',
                     data: effectiveness,
-                    borderColor: '#6f42c1',
-                    backgroundColor: 'rgba(111, 66, 193, 0.05)',
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.05)',
                     borderWidth: 3,
                     pointRadius: 4,
                     pointHoverRadius: 6,
@@ -627,7 +627,7 @@ function renderEffectivenessChart(data) {
                     label: 'Effectiveness Trend Line',
                     type: 'line',
                     data: trendValues,
-                    borderColor: 'rgba(111, 66, 193, 0.6)',
+                    borderColor: 'rgba(139, 92, 246, 0.6)',
                     backgroundColor: 'transparent',
                     borderWidth: 2,
                     borderDash: [6, 6],

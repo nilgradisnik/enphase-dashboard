@@ -16,32 +16,33 @@
     <div class="live-card">
         <div>
             <div class="live-label">Solar Production</div>
-            <div style="font-size:0.85rem; color:#666;">Generating power from panels</div>
+            <div style="font-size:0.85rem; color: var(--text-muted);">Generating power from panels</div>
         </div>
-        <div id="val-prod" class="live-val" style="color: #28a745;">0 W</div>
+        <div id="val-prod" class="live-val" style="color: var(--success);">0 W</div>
     </div>
 
     <!-- 2. Grid -->
     <div class="live-card">
         <div>
             <div id="label-grid" class="live-label">Grid Flow</div>
-            <div style="font-size:0.85rem; color:#666;">Net flow at the meter</div>
+            <div style="font-size:0.85rem; color: var(--text-muted);">Net flow at the meter</div>
         </div>
         <div id="val-grid" class="live-val">0 W</div>
     </div>
 
     <!-- 3. Consumption -->
-    <div class="live-card" style="background: #fff8f0; border-top: 2px solid #ff6600; margin-top: 1rem;">
+    <div class="live-card" style="background: var(--accent-light); border-top: 2px solid var(--accent); margin-top: 1.5rem;">
         <div>
             <div class="live-label">House Consumption</div>
-            <div style="font-size:0.85rem; color:#666;">Total power being used by home</div>
+            <div style="font-size:0.85rem; color: var(--text-muted);">Total power being used by home</div>
         </div>
-        <div id="val-cons" class="live-val" style="color: #ff6600;">0 W</div>
+        <div id="val-cons" class="live-val" style="color: var(--accent);">0 W</div>
     </div>
 </div>
 <div class="data-box">
     <details>
-        <summary style="cursor: pointer; font-weight: bold; color: #ff6600;">Raw Meters JSON</summary>
+        <summary>Raw Meters JSON</summary>
         <pre id="raw-meters" style="margin-top: 1rem;">No data yet.</pre>
     </details>
 </div>
+
