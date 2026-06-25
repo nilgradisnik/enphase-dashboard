@@ -56,6 +56,14 @@ Stores calculated daily statistics for fast dashboard queries.
 
 ## 3. Mathematical Formulas & Resiliency
 
+### Target Timezone & Daily Boundaries
+All raw readings stored in `meter_readings` are mapped using UTC timestamps. However, aggregation is calculated against a specific target timezone (configured as `timezone` in `configuration/config.yml`, defaulting to `America/New_York`).
+To aggregate correctly without database type-mismatch or performance overhead:
+1. For any target date, the local day boundaries (00:00:00 to 23:59:59) are defined in the target timezone.
+2. These local boundaries are converted to UTC datetime values.
+3. The raw UTC timestamps in the database are queried against these UTC boundary datetimes.
+4. If the configured timezone is updated, users can run the "Rebuild History" action via the UI or trigger a POST request to `/api/history/rebuild` to retroactively regenerate all daily aggregates.
+
 ### Daily Energy Calculation
 For any given date, energy metrics (in kWh) are computed as:
 1. **Solar Production**:

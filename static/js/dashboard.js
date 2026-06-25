@@ -374,6 +374,34 @@ async function syncDatabase() {
     }
 }
 
+async function rebuildDatabase() {
+    if (!confirm("Are you sure you want to rebuild all historical daily stats? This will recalculate daily aggregates based on your configured timezone. This may take a few seconds.")) {
+        return;
+    }
+
+    const btn = document.querySelector("#history-tab .rebuild-btn");
+    if (btn) {
+        btn.textContent = "Rebuilding...";
+        btn.disabled = true;
+    }
+    
+    try {
+        const res = await fetch('/api/history/rebuild', { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Rebuild Error');
+        await fetchHistory();
+        alert("Database daily history rebuilt successfully in the target timezone!");
+    } catch (err) {
+        console.error("Rebuild error:", err);
+        alert("Failed to rebuild database history: " + err.message);
+    } finally {
+        if (btn) {
+            btn.textContent = "Rebuild History (Timezone Change)";
+            btn.disabled = false;
+        }
+    }
+}
+
 async function fetchHistory() {
     const tableBody = document.getElementById('history-table-body');
     if (tableBody) {

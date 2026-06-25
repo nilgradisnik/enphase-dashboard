@@ -11,6 +11,18 @@ def normalize_dt(dt):
         return dt.astimezone(timezone.utc).replace(tzinfo=None)
     return dt
 
+def get_target_timezone():
+    """Load the configured timezone from config.yml, defaulting to America/New_York."""
+    from app import load_config
+    from zoneinfo import ZoneInfo
+    config = load_config()
+    tz_name = config.get('timezone', 'America/New_York')
+    try:
+        return ZoneInfo(tz_name)
+    except Exception as e:
+        print(f"Error loading timezone {tz_name}, falling back to America/New_York: {e}")
+        return ZoneInfo('America/New_York')
+
 def get_gateway_readings():
     """Fetch readings from Enphase Envoy Gateway."""
     from app import load_config, get_authenticated_gateway
@@ -64,6 +76,10 @@ def record_reading(app):
             db.session.commit()
             print(f"Recorded reading at {timestamp} UTC: Prod={prod_wh} Wh, Import={import_wh} Wh, Export={export_wh} Wh")
             
+            # Determine local date in target timezone
+            target_tz = get_target_timezone()
+            local_date = timestamp.replace(tzinfo=timezone.utc).astimezone(target_tz).date()
+
             # If a gap of > 2 hours is detected, handle it
             if prev_ts:
                 time_diff = timestamp - prev_ts
@@ -71,11 +87,11 @@ def record_reading(app):
                     print(f"Gap detected between {prev_ts} and {timestamp} ({time_diff.total_seconds()/3600:.2f} hours). Interpolating...")
                     interpolate_gap(prev_reading, new_reading)
                 else:
-                    # Normal update: recalculate today's stats
-                    aggregate_day(timestamp.date())
+                    # Normal update: recalculate today's stats in target timezone
+                    aggregate_day(local_date)
             else:
-                # First reading: aggregate today
-                aggregate_day(timestamp.date())
+                # First reading: aggregate today in target timezone
+                aggregate_day(local_date)
                 
         except Exception as e:
             db.session.rollback()
@@ -97,17 +113,24 @@ def interpolate_gap(prev_reading, new_reading):
     if total_seconds <= 0:
         return
         
-    start_date = t_start.date()
-    end_date = t_end.date()
+    target_tz = get_target_timezone()
+    t_start_local = t_start.replace(tzinfo=timezone.utc).astimezone(target_tz)
+    t_end_local = t_end.replace(tzinfo=timezone.utc).astimezone(target_tz)
+    
+    start_date = t_start_local.date()
+    end_date = t_end_local.date()
     
     # Calculate days in the interval
     current_date = start_date
     while current_date <= end_date:
-        # Determine the boundaries of the gap within this calendar day (naive UTC datetimes)
-        day_start_dt = datetime.combine(current_date, time.min)
-        day_end_dt = datetime.combine(current_date, time.max)
+        # Determine the boundaries of this local calendar day, converted to UTC
+        local_start = datetime.combine(current_date, time.min).replace(tzinfo=target_tz)
+        local_end = datetime.combine(current_date, time.max).replace(tzinfo=target_tz)
         
-        # Overlap of the gap with this calendar day
+        day_start_dt = local_start.astimezone(timezone.utc).replace(tzinfo=None)
+        day_end_dt = local_end.astimezone(timezone.utc).replace(tzinfo=None)
+        
+        # Overlap of the gap with this local calendar day (using naive UTC datetimes)
         overlap_start = max(t_start, day_start_dt)
         overlap_end = min(t_end, day_end_dt)
         overlap_secs = (overlap_end - overlap_start).total_seconds()
@@ -141,11 +164,18 @@ def interpolate_gap(prev_reading, new_reading):
 
 def aggregate_day(day_date):
     """
-    Calculate the production and consumption metrics for a specific date.
-    Finds the earliest and latest readings on that day, and computes the delta.
+    Calculate the production and consumption metrics for a specific date in the target timezone.
+    Finds the earliest and latest readings on that local day (in UTC boundaries), and computes the delta.
     """
-    day_start = datetime.combine(day_date, time.min)
-    day_end = datetime.combine(day_date, time.max)
+    target_tz = get_target_timezone()
+    
+    # Construct start and end datetimes in target timezone
+    local_start = datetime.combine(day_date, time.min).replace(tzinfo=target_tz)
+    local_end = datetime.combine(day_date, time.max).replace(tzinfo=target_tz)
+    
+    # Convert to UTC and strip tzinfo to match our naive UTC database timestamps
+    day_start = local_start.astimezone(timezone.utc).replace(tzinfo=None)
+    day_end = local_end.astimezone(timezone.utc).replace(tzinfo=None)
     
     # 1. Find the first reading of the day
     # Look for the last reading of the PREVIOUS day to use as start-of-day reference
@@ -195,3 +225,39 @@ def aggregate_day(day_date):
     
     db.session.commit()
     print(f"Aggregated stats for {day_date}: Prod={prod_kwh:.2f} kWh, Import={import_kwh:.2f} kWh, Export={export_kwh:.2f} kWh, Cons={cons_kwh:.2f} kWh")
+
+def rebuild_all_daily_stats(app):
+    """
+    Rebuilds all DailyStats from raw MeterReading records using the configured timezone.
+    """
+    with app.app_context():
+        # 1. Clear existing stats
+        DailyStats.query.delete()
+        db.session.commit()
+        
+        # 2. Query all readings in chronological order
+        readings = MeterReading.query.order_by(MeterReading.timestamp.asc()).all()
+        if not readings:
+            return
+            
+        target_tz = get_target_timezone()
+        
+        prev_reading = None
+        for reading in readings:
+            ts = normalize_dt(reading.timestamp)
+            local_date = ts.replace(tzinfo=timezone.utc).astimezone(target_tz).date()
+            
+            if prev_reading:
+                prev_ts = normalize_dt(prev_reading.timestamp)
+                time_diff = ts - prev_ts
+                if time_diff > timedelta(hours=2):
+                    interpolate_gap(prev_reading, reading)
+                else:
+                    aggregate_day(local_date)
+            else:
+                aggregate_day(local_date)
+                
+            prev_reading = reading
+            
+        db.session.commit()
+        print("All daily stats successfully rebuilt in target timezone.")
