@@ -133,15 +133,6 @@ def refresh_history_api():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/history/rebuild', methods=['POST'])
-def rebuild_history_api():
-    try:
-        from dashboard_services import rebuild_all_daily_stats
-        rebuild_all_daily_stats(app)
-        return jsonify({"status": "success", "message": "Daily stats completely rebuilt in the target timezone."})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 # Scheduled job definitions
 @scheduler.task('interval', id='record_readings_job', minutes=15)
 def scheduled_fetch():

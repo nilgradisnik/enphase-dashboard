@@ -225,39 +225,3 @@ def aggregate_day(day_date):
     
     db.session.commit()
     print(f"Aggregated stats for {day_date}: Prod={prod_kwh:.2f} kWh, Import={import_kwh:.2f} kWh, Export={export_kwh:.2f} kWh, Cons={cons_kwh:.2f} kWh")
-
-def rebuild_all_daily_stats(app):
-    """
-    Rebuilds all DailyStats from raw MeterReading records using the configured timezone.
-    """
-    with app.app_context():
-        # 1. Clear existing stats
-        DailyStats.query.delete()
-        db.session.commit()
-        
-        # 2. Query all readings in chronological order
-        readings = MeterReading.query.order_by(MeterReading.timestamp.asc()).all()
-        if not readings:
-            return
-            
-        target_tz = get_target_timezone()
-        
-        prev_reading = None
-        for reading in readings:
-            ts = normalize_dt(reading.timestamp)
-            local_date = ts.replace(tzinfo=timezone.utc).astimezone(target_tz).date()
-            
-            if prev_reading:
-                prev_ts = normalize_dt(prev_reading.timestamp)
-                time_diff = ts - prev_ts
-                if time_diff > timedelta(hours=2):
-                    interpolate_gap(prev_reading, reading)
-                else:
-                    aggregate_day(local_date)
-            else:
-                aggregate_day(local_date)
-                
-            prev_reading = reading
-            
-        db.session.commit()
-        print("All daily stats successfully rebuilt in target timezone.")
