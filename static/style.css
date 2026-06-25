@@ -186,13 +186,19 @@ body {
     background: var(--primary);
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
+    padding: 0 1.5rem;
+    height: 2.75rem;
+    min-width: 12.5rem;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     border-radius: var(--radius-sm);
     cursor: pointer;
     font-weight: 700;
     font-size: 0.95rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow-sm);
+    gap: 0.5rem;
 }
 .refresh-btn:hover {
     background: var(--primary-hover);
@@ -201,6 +207,14 @@ body {
 }
 .refresh-btn:active {
     transform: translateY(0);
+}
+.refresh-btn .loading {
+    color: white;
+    font-style: normal;
+}
+.refresh-btn .loading::after {
+    border-color: rgba(255, 255, 255, 0.3);
+    border-top-color: white;
 }
 
 /* Details and Raw Data */
