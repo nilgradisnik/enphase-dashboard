@@ -20,5 +20,6 @@ COPY . .
 # Expose the port Flask runs on
 EXPOSE 5000
 
-# Run the application
-CMD ["python", "app.py"]
+# Run the application using a production WSGI server (Gunicorn)
+# Limit to 1 worker to prevent duplicate APScheduler instances
+CMD ["gunicorn", "--workers", "1", "--bind", "0.0.0.0:5000", "app:app"]
