@@ -2,42 +2,42 @@
 
 {% block content %}
     <!-- Live Power Tab -->
-    <div id="live-tab" class="tab-content" x-show="activeTab === 'live-tab'">
+    <div id="live-tab" class="tab-content" :class="{ active: activeTab === 'live-tab' }">
         {% include "tabs/live_power.html" %}
     </div>
 
     <!-- Summary Tab -->
-    <div id="summary-tab" class="tab-content" x-show="activeTab === 'summary-tab'">
+    <div id="summary-tab" class="tab-content" :class="{ active: activeTab === 'summary-tab' }">
         {% include "tabs/production_summary.html" %}
     </div>
 
     <!-- Daily History Tab -->
-    <div id="history-tab" class="tab-content" x-show="activeTab === 'history-tab'">
+    <div id="history-tab" class="tab-content" :class="{ active: activeTab === 'history-tab' }">
         {% include "tabs/history.html" %}
     </div>
 
     <!-- Phase Details Tab -->
-    <div id="phase-tab" class="tab-content" x-show="activeTab === 'phase-tab'">
+    <div id="phase-tab" class="tab-content" :class="{ active: activeTab === 'phase-tab' }">
         {% include "tabs/phase_details.html" %}
     </div>
 
     <!-- System Health Tab -->
-    <div id="health-tab" class="tab-content" x-show="activeTab === 'health-tab'">
+    <div id="health-tab" class="tab-content" :class="{ active: activeTab === 'health-tab' }">
         {% include "tabs/system_health.html" %}
     </div>
 
     <!-- Connectivity Tab -->
-    <div id="connectivity-tab" class="tab-content" x-show="activeTab === 'connectivity-tab'">
+    <div id="connectivity-tab" class="tab-content" :class="{ active: activeTab === 'connectivity-tab' }">
         {% include "tabs/connectivity.html" %}
     </div>
 
     <!-- Event Logs Tab -->
-    <div id="events-tab" class="tab-content" x-show="activeTab === 'events-tab'">
+    <div id="events-tab" class="tab-content" :class="{ active: activeTab === 'events-tab' }">
         {% include "tabs/event_logs.html" %}
     </div>
 
     <!-- System Specs Tab -->
-    <div id="specs-tab" class="tab-content" x-show="activeTab === 'specs-tab'">
+    <div id="specs-tab" class="tab-content" :class="{ active: activeTab === 'specs-tab' }">
         {% include "tabs/system_specs.html" %}
     </div>
 {% endblock %}
