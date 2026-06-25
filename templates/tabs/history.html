@@ -1,23 +1,25 @@
 <div class="tab-header">
     <h2 style="margin: 0;">Daily Energy History</h2>
     <div class="tab-controls">
-        <button class="refresh-btn" onclick="syncDatabase()">Sync Database Now</button>
+        <button class="refresh-btn" @click="syncDatabase()" :disabled="loadingHistory">
+            <span x-text="loadingHistory ? 'Syncing...' : 'Sync Database Now'"></span>
+        </button>
     </div>
 </div>
 
-<div class="data-box" style="background: white; border: 1px solid #ddd; padding: 1.5rem; position: relative;">
-    <h3 style="margin-top: 0; color: #ff6600;">Solar Production, Grid Export & House Consumption</h3>
+<div class="data-box" style="background: white; border: 1px solid var(--border-card); padding: 1.5rem; position: relative;">
+    <h3 style="margin-top: 0; color: var(--primary);">Solar Production, Grid Export & House Consumption</h3>
     <div style="width: 100%; height: 400px; position: relative;">
         <canvas id="historyChart"></canvas>
     </div>
 </div>
 
 <div class="data-box" style="margin-top: 1.5rem;">
-    <h3 style="margin-top: 0; color: #333;">Detailed History Log</h3>
+    <h3 style="margin-top: 0; color: var(--text-main);">Detailed History Log</h3>
     <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; text-align: left;" id="history-table">
             <thead>
-                <tr style="border-bottom: 2px solid #ff6600; font-weight: bold; color: #333;">
+                <tr style="border-bottom: 2px solid var(--primary); font-weight: bold; color: var(--text-main);">
                     <th style="padding: 0.8rem 0.5rem;">Date</th>
                     <th style="padding: 0.8rem 0.5rem;">Solar Production</th>
                     <th style="padding: 0.8rem 0.5rem;">Exported to Grid</th>
@@ -26,10 +28,30 @@
                     <th style="padding: 0.8rem 0.5rem;">Status</th>
                 </tr>
             </thead>
-            <tbody id="history-table-body">
-                <tr>
-                    <td colspan="6" class="loading" style="padding: 1.5rem; text-align: center;">Loading historical data...</td>
-                </tr>
+            <tbody>
+                <template x-if="loadingHistory && historyLogs.length === 0">
+                    <tr>
+                        <td colspan="6" class="loading" style="padding: 1.5rem; text-align: center;">Updating history data...</td>
+                    </tr>
+                </template>
+                <template x-if="!loadingHistory && historyLogs.length === 0">
+                    <tr>
+                        <td colspan="6" style="padding: 1.5rem; text-align: center; color: var(--text-muted);">No historical data in database yet. Try running "Sync Database Now".</td>
+                    </tr>
+                </template>
+                <template x-for="row in [...historyLogs].reverse()" :key="row.date">
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.8rem 0.5rem; font-weight: bold; color: var(--text-main);" x-text="row.date"></td>
+                        <td style="padding: 0.8rem 0.5rem; color: var(--success); font-weight: 500;" x-text="row.production_kwh.toFixed(2) + ' kWh'"></td>
+                        <td style="padding: 0.8rem 0.5rem; color: var(--primary); font-weight: 500;" x-text="row.export_kwh.toFixed(2) + ' kWh'"></td>
+                        <td style="padding: 0.8rem 0.5rem; color: var(--danger); font-weight: 500;" x-text="row.import_kwh.toFixed(2) + ' kWh'"></td>
+                        <td style="padding: 0.8rem 0.5rem; color: var(--accent); font-weight: bold;" x-text="row.consumption_kwh.toFixed(2) + ' kWh'"></td>
+                        <td style="padding: 0.8rem 0.5rem;">
+                            <span class="status-tag status-ok" x-show="!row.is_interpolated">Normal</span>
+                            <span class="status-tag" style="background: var(--warning-light); color: #92400e; border: 1px solid #fef3c7;" x-show="row.is_interpolated">Estimated</span>
+                        </td>
+                    </tr>
+                </template>
             </tbody>
         </table>
     </div>

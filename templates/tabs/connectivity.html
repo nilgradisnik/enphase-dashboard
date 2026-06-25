@@ -1,13 +1,52 @@
 <div style="display:flex; justify-content:space-between; align-items:center;">
     <h2>Gateway Connectivity Status</h2>
-    <button class="refresh-btn" onclick="fetchConnectivity()">Refresh Status</button>
+    <button class="refresh-btn" @click="fetchConnectivity()" :disabled="loadingConnectivity">
+        <span x-text="loadingConnectivity ? 'Refreshing...' : 'Refresh Status'"></span>
+    </button>
 </div>
-<div id="connectivity-data" class="data-box">
-    <p class="loading">Click refresh to load connectivity status.</p>
+
+<div class="data-box" x-show="loadingConnectivity && !connectivity">
+    <p class="loading">Updating connectivity status...</p>
 </div>
-<div class="data-box">
+
+<template x-if="connectivity">
+    <div style="margin-top: 1.5rem;">
+        <div class="responsive-grid">
+            <div class="data-box" style="margin-top:0; padding: 1.5rem 1.75rem;">
+                <p style="margin: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
+                    <strong>MQTT State:</strong> 
+                    <span class="status-tag" :class="isOkState(connectivity.mqtt_state) ? 'status-ok' : 'status-err'" x-text="connectivity.mqtt_state.toUpperCase()"></span>
+                </p>
+                <p style="margin: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
+                    <strong>Provisioning:</strong> 
+                    <span class="status-tag" :class="isOkState(connectivity.prov_state) ? 'status-ok' : 'status-err'" x-text="connectivity.prov_state.toUpperCase()"></span>
+                </p>
+                <p style="margin: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
+                    <strong>Auth State:</strong> 
+                    <span class="status-tag" :class="isOkState(connectivity.auth_state) ? 'status-ok' : 'status-err'" x-text="connectivity.auth_state.toUpperCase()"></span>
+                </p>
+            </div>
+            <div class="data-box" style="margin-top:0; padding: 1.5rem 1.75rem;">
+                <p style="margin: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
+                    <strong>Cloud Stream:</strong> 
+                    <span class="status-tag" :class="isOkState(connectivity.sc_stream) ? 'status-ok' : 'status-err'" x-text="connectivity.sc_stream.toUpperCase()"></span>
+                </p>
+                <p style="margin: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
+                    <strong>Debug Stream:</strong> 
+                    <span class="status-tag" :class="isOkState(connectivity.sc_debug) ? 'status-ok' : 'status-err'" x-text="connectivity.sc_debug.toUpperCase()"></span>
+                </p>
+                <p style="margin: 0.75rem 0; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem;">
+                    <strong>Last Meter Update:</strong> 
+                    <span style="font-weight: 600;" x-text="formatDate(connectivity.meters_last_update)"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<div class="data-box" style="margin-top: 1.5rem;">
     <details>
-        <summary style="cursor: pointer; font-weight: bold; color: #ff6600;">Raw Connectivity JSON</summary>
-        <pre id="raw-connectivity" style="margin-top: 1rem;">No data yet.</pre>
+        <summary>Raw Connectivity JSON</summary>
+        <pre x-text="rawConnectivity">No data yet.</pre>
     </details>
 </div>

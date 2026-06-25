@@ -1,13 +1,56 @@
 <div style="display:flex; justify-content:space-between; align-items:center;">
     <h2>System Summary</h2>
-    <button class="refresh-btn" onclick="fetchSummary()">Refresh Summary</button>
+    <button class="refresh-btn" @click="fetchSummary()" :disabled="loadingSummary">
+        <span x-show="!loadingSummary">Refresh Summary</span>
+        <span x-show="loadingSummary" class="loading">Refreshing...</span>
+    </button>
 </div>
-<div id="summary-data" class="data-box">
-    <p class="loading">Click refresh or open tab to load summary data.</p>
+
+<div class="data-box" x-show="loadingSummary && !lifetimeSolar">
+    <p class="loading">Updating summary...</p>
 </div>
-<div class="data-box">
+
+<div id="summary-data" x-show="lifetimeSolar">
+    <div class="metric-cards-grid">
+        <div class="metric-card solar">
+            <div class="metric-card-title">Lifetime Solar</div>
+            <div class="metric-card-value" x-text="lifetimeSolar"></div>
+        </div>
+        <div class="metric-card imported">
+            <div class="metric-card-title">Grid Imported</div>
+            <div class="metric-card-value" x-text="lifetimeImported"></div>
+        </div>
+        <div class="metric-card exported">
+            <div class="metric-card-title">Grid Exported</div>
+            <div class="metric-card-value" x-text="lifetimeExported"></div>
+        </div>
+        <div class="metric-card consumed">
+            <div class="metric-card-title">House Consumed</div>
+            <div class="metric-card-value" x-text="lifetimeConsumed"></div>
+        </div>
+        <div class="metric-card offset">
+            <div class="metric-card-title">Net Solar Offset</div>
+            <div class="metric-card-value" x-text="netSolarOffset"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Solar Effectiveness Chart -->
+<div id="effectiveness-chart-container" class="data-box" style="background: white; border: 1px solid var(--border-card); padding: 1.5rem; margin-top: 1.5rem;" x-show="showEffectivenessChart">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
+        <h3 style="margin: 0; color: var(--primary);">Daily Solar vs. Grid Usage & Effectiveness</h3>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">
+            Effectiveness = (Solar Production / House Consumption) × 100%
+        </span>
+    </div>
+    <div style="width: 100%; height: 350px; position: relative;">
+        <canvas id="effectivenessChart"></canvas>
+    </div>
+</div>
+
+<div class="data-box" style="margin-top: 1.5rem;">
     <details>
-        <summary style="cursor: pointer; font-weight: bold; color: #ff6600;">Raw Summary JSON</summary>
-        <pre id="raw-summary" style="margin-top: 1rem;">No data yet.</pre>
+        <summary>Raw Summary JSON</summary>
+        <pre x-text="rawSummary">No data yet.</pre>
     </details>
 </div>

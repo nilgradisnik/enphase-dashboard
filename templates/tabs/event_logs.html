@@ -1,13 +1,32 @@
 <div style="display:flex; justify-content:space-between; align-items:center;">
     <h2>System Event Logs</h2>
-    <button class="refresh-btn" onclick="fetchEvents()">Refresh Events</button>
+    <button class="refresh-btn" @click="fetchEvents()" :disabled="loadingEvents">
+        <span x-text="loadingEvents ? 'Refreshing...' : 'Refresh Events'"></span>
+    </button>
 </div>
-<div id="events-data" class="data-box">
-    <p class="loading">Click refresh to load system events.</p>
+
+<div class="data-box" x-show="loadingEvents && events.length === 0">
+    <p class="loading">Updating system alerts...</p>
 </div>
-<div class="data-box">
+
+<div class="data-box" x-show="events.length === 0 && !loadingEvents">
+    <p style="color: var(--success); font-weight: bold; margin: 0;">✓ No active system alerts.</p>
+</div>
+
+<div class="data-box" x-show="events.length > 0" style="padding: 0; overflow: hidden; margin-top: 1.5rem;">
+    <ul style="list-style: none; padding: 0; margin: 0;">
+        <template x-for="(alert, idx) in events" :key="idx">
+            <li style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px;">
+                <span class="status-tag status-err">ALERT</span>
+                <span x-text="alert" style="color: var(--text-main); font-weight: 500;"></span>
+            </li>
+        </template>
+    </ul>
+</div>
+
+<div class="data-box" style="margin-top: 1.5rem;">
     <details>
-        <summary style="cursor: pointer; font-weight: bold; color: #ff6600;">Raw Events JSON</summary>
-        <pre id="raw-events" style="margin-top: 1rem;">No data yet.</pre>
+        <summary>Raw Events JSON</summary>
+        <pre x-text="rawEvents">No data yet.</pre>
     </details>
 </div>
