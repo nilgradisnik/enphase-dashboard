@@ -408,3 +408,28 @@ select:focus {
 .metric-card.offset { border-left: 4px solid #8b5cf6; } /* Premium Violet */
 .metric-card.offset .metric-card-value { color: #8b5cf6; }
 
+/* Inverter grid and cards */
+.inverters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.inverter-card {
+    margin: 0;
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-top: 4px solid var(--primary);
+}
+.inverter-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--accent-border);
+}
+
+

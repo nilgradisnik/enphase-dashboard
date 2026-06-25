@@ -15,9 +15,9 @@
     <p class="loading">Updating inverter status...</p>
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.25rem; margin-top: 1.5rem;" x-show="inverters.length > 0">
+<div class="inverters-grid" x-show="inverters.length > 0">
     <template x-for="inv in inverters" :key="inv.serial_num">
-        <div class="data-box" style="margin-top: 0; padding: 1.25rem; border-top: 4px solid var(--primary);" :style="{ borderTopColor: (inv.operating && inv.producing && inv.communicating) ? 'var(--success)' : 'var(--danger)' }">
+        <div class="inverter-card" :style="{ borderTopColor: (inv.operating && inv.producing && inv.communicating) ? 'var(--success)' : 'var(--danger)' }">
             <h4 style="margin: 0 0 0.5rem 0; color: var(--text-main); font-weight: 700;" x-text="'SN: ' + inv.serial_num"></h4>
             <p style="margin: 0.25rem 0; font-size: 0.9rem; color: var(--text-muted);">
                 <strong>Model:</strong> <span style="color: var(--text-main); font-weight: 600;" x-text="inv.part_num"></span>
