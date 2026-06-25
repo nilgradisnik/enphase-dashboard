@@ -1,7 +1,5 @@
 let historyChartInstance = null;
 let effectivenessChartInstance = null;
-let historyDelayed = false;
-let effectivenessDelayed = false;
 
 function formatPower(watts) {
     const absWatts = Math.abs(watts);
@@ -41,7 +39,6 @@ function renderHistoryChart(data) {
     if (historyChartInstance) {
         historyChartInstance.destroy();
     }
-    historyDelayed = false;
     
     const dates = data.map(d => d.date);
     const productions = data.map(d => d.production_kwh);
@@ -87,18 +84,7 @@ function renderHistoryChart(data) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: {
-                onComplete: () => {
-                    historyDelayed = true;
-                },
-                delay: (context) => {
-                    let delay = 0;
-                    if (context.type === 'data' && context.mode === 'default' && !historyDelayed) {
-                        delay = context.dataIndex * 30 + context.datasetIndex * 50;
-                    }
-                    return delay;
-                }
-            },
+            animation: false,
             scales: {
                 y: {
                     beginAtZero: true,
@@ -145,7 +131,6 @@ function renderEffectivenessChart(data) {
     if (effectivenessChartInstance) {
         effectivenessChartInstance.destroy();
     }
-    effectivenessDelayed = false;
     
     const dates = data.map(d => d.date);
     const productions = data.map(d => d.production_kwh);
@@ -213,18 +198,7 @@ function renderEffectivenessChart(data) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: {
-                onComplete: () => {
-                    effectivenessDelayed = true;
-                },
-                delay: (context) => {
-                    let delay = 0;
-                    if (context.type === 'data' && context.mode === 'default' && !effectivenessDelayed) {
-                        delay = context.dataIndex * 30 + context.datasetIndex * 50;
-                    }
-                    return delay;
-                }
-            },
+            animation: false,
             interaction: {
                 mode: 'index',
                 intersect: false,

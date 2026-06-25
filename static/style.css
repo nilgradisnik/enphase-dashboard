@@ -133,7 +133,6 @@ body {
 
 .tab-content {
     display: none;
-    animation: fadeIn 0.3s ease-out;
 }
 .tab-content.active {
     display: block;
