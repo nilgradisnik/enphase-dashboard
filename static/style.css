@@ -185,9 +185,9 @@ body {
     background: var(--primary);
     color: white;
     border: none;
-    padding: 0 1.25rem;
+    padding: 0;
     height: 2.25rem;
-    min-width: 6.5rem;
+    width: 9rem;
     display: inline-flex;
     justify-content: center;
     align-items: center;
