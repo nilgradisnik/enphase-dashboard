@@ -9,7 +9,7 @@
             <option value="5000">5 Seconds</option>
         </select>
         <button class="refresh-btn" @click="fetchMeters()" :disabled="loadingMeters">
-            <span x-show="!loadingMeters">Refresh Now</span>
+            <span x-show="!loadingMeters">Refresh</span>
             <span x-show="loadingMeters" class="loading">Refreshing...</span>
         </button>
     </div>
@@ -24,7 +24,7 @@
     <div class="live-card">
         <div>
             <div class="live-label">Solar Production</div>
-            <div style="font-size:0.85rem; color: var(--text-muted);">Generating power from panels</div>
+            <div class="live-subtext" style="font-size:0.85rem; color: var(--text-muted);">Generating power from panels</div>
         </div>
         <div class="live-val" style="color: var(--success);" x-text="formatPower(prodPower)">0 W</div>
     </div>
@@ -33,7 +33,7 @@
     <div class="live-card">
         <div>
             <div class="live-label" x-text="gridPower < 0 ? 'Exporting to Grid' : 'Importing from Grid'">Grid Flow</div>
-            <div style="font-size:0.85rem; color: var(--text-muted);">Net flow at the meter</div>
+            <div class="live-subtext" style="font-size:0.85rem; color: var(--text-muted);">Net flow at the meter</div>
         </div>
         <div class="live-val" :style="{ color: gridPower < 0 ? 'var(--primary)' : 'var(--danger)' }" x-text="formatPower(Math.abs(gridPower))">0 W</div>
     </div>
@@ -42,7 +42,7 @@
     <div class="live-card" style="background: var(--accent-light); border-top: 2px solid var(--accent); margin-top: 1.5rem;">
         <div>
             <div class="live-label">House Consumption</div>
-            <div style="font-size:0.85rem; color: var(--text-muted);">Total power being used by home</div>
+            <div class="live-subtext" style="font-size:0.85rem; color: var(--text-muted);">Total power being used by home</div>
         </div>
         <div class="live-val" style="color: var(--accent);" x-text="formatPower(consPower)">0 W</div>
     </div>

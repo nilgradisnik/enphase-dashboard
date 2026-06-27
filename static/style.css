@@ -185,16 +185,16 @@ body {
     background: var(--primary);
     color: white;
     border: none;
-    padding: 0 1.5rem;
-    height: 2.75rem;
-    min-width: 12.5rem;
+    padding: 0 1.25rem;
+    height: 2.25rem;
+    min-width: 6.5rem;
     display: inline-flex;
     justify-content: center;
     align-items: center;
     border-radius: var(--radius-sm);
     cursor: pointer;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow-sm);
     gap: 0.5rem;
@@ -349,11 +349,43 @@ select:focus {
     .container { padding: 1.5rem 1rem; }
     .app-title { font-size: 1.75rem; }
     .live-val { font-size: 1.75rem; }
-    .live-card { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
-    .live-val { align-self: flex-end; }
+    .live-card {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.25rem;
+        gap: 1rem;
+    }
+    .live-subtext {
+        display: none !important;
+    }
+    .refresh-btn {
+        display: none !important;
+    }
     .tab-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
     .tab-controls { width: 100%; justify-content: space-between; }
     .responsive-grid { grid-template-columns: 1fr; }
+    
+    /* Better alignment and sizing for metric cards grid on mobile */
+    .metric-cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+    .metric-card {
+        padding: 1rem 0.85rem;
+    }
+    .metric-card-value {
+        font-size: 1.35rem;
+    }
+    
+    /* Better alignment and sizing for inverters grid on mobile */
+    .inverters-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+    .inverter-card {
+        padding: 1rem;
+    }
 }
 
 /* Modern Metric Cards Grid */
