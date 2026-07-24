@@ -1,7 +1,10 @@
 <div style="display:flex; justify-content:space-between; align-items:center;">
     <h2>Per-Inverter Health & Status</h2>
     <button class="refresh-btn" @click="fetchHealth()" :disabled="loadingHealth">
-        <span x-text="loadingHealth ? 'Refreshing...' : 'Refresh Health'"></span>
+        <span class="btn-content-stack">
+            <span :class="{ 'invisible-text': loadingHealth }">Refresh Health</span>
+            <span :class="{ 'invisible-text': !loadingHealth }" class="loading">Refreshing...</span>
+        </span>
     </button>
 </div>
 

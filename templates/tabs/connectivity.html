@@ -1,7 +1,10 @@
 <div style="display:flex; justify-content:space-between; align-items:center;">
     <h2>Gateway Connectivity Status</h2>
     <button class="refresh-btn" @click="fetchConnectivity()" :disabled="loadingConnectivity">
-        <span x-text="loadingConnectivity ? 'Refreshing...' : 'Refresh Status'"></span>
+        <span class="btn-content-stack">
+            <span :class="{ 'invisible-text': loadingConnectivity }">Refresh Status</span>
+            <span :class="{ 'invisible-text': !loadingConnectivity }" class="loading">Refreshing...</span>
+        </span>
     </button>
 </div>
 

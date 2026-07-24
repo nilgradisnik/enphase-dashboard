@@ -1,7 +1,10 @@
 <div style="display:flex; justify-content:space-between; align-items:center;">
     <h2>Phase Electrical Details</h2>
     <button class="refresh-btn" @click="fetchPhases()" :disabled="loadingPhases">
-        <span x-text="loadingPhases ? 'Refreshing...' : 'Refresh Phase Data'"></span>
+        <span class="btn-content-stack">
+            <span :class="{ 'invisible-text': loadingPhases }">Refresh Phase Data</span>
+            <span :class="{ 'invisible-text': !loadingPhases }" class="loading">Refreshing...</span>
+        </span>
     </button>
 </div>
 

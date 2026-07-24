@@ -1,6 +1,33 @@
 let historyChartInstance = null;
 let effectivenessChartInstance = null;
 
+function formatChartDate(dateStr) {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    const monthIndex = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    if (monthIndex >= 0 && monthIndex < 12) {
+        return `${months[monthIndex]} ${day}`;
+    }
+    return dateStr;
+}
+
+function formatChartDateLong(dateStr) {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    const year = parts[0];
+    const monthIndex = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    if (monthIndex >= 0 && monthIndex < 12) {
+        return `${months[monthIndex]} ${day}, ${year}`;
+    }
+    return dateStr;
+}
+
 function formatPower(watts) {
     const absWatts = Math.abs(watts);
     if (absWatts >= 1000000) return (watts / 1000000).toFixed(2) + ' MW';
@@ -40,7 +67,7 @@ function renderHistoryChart(data) {
         historyChartInstance.destroy();
     }
     
-    const dates = data.map(d => d.date);
+    const dates = data.map(d => formatChartDate(d.date));
     const productions = data.map(d => d.production_kwh);
     const exports = data.map(d => d.export_kwh);
     const imports = data.map(d => d.import_kwh);
@@ -108,6 +135,13 @@ function renderHistoryChart(data) {
                 },
                 tooltip: {
                     callbacks: {
+                        title: function(context) {
+                            const dataIndex = context[0].dataIndex;
+                            if (data[dataIndex]) {
+                                return formatChartDateLong(data[dataIndex].date);
+                            }
+                            return context[0].label;
+                        },
                         afterBody: function(items) {
                             const dataIndex = items[0].dataIndex;
                             if (data[dataIndex] && data[dataIndex].is_interpolated) {
@@ -132,7 +166,7 @@ function renderEffectivenessChart(data) {
         effectivenessChartInstance.destroy();
     }
     
-    const dates = data.map(d => d.date);
+    const dates = data.map(d => formatChartDate(d.date));
     const productions = data.map(d => d.production_kwh);
     const imports = data.map(d => d.import_kwh);
     
@@ -249,6 +283,13 @@ function renderEffectivenessChart(data) {
                 },
                 tooltip: {
                     callbacks: {
+                        title: function(context) {
+                            const dataIndex = context[0].dataIndex;
+                            if (data[dataIndex]) {
+                                return formatChartDateLong(data[dataIndex].date);
+                            }
+                            return context[0].label;
+                        },
                         label: function(context) {
                             let label = context.dataset.label || '';
                             if (label) {
@@ -297,6 +338,8 @@ document.addEventListener('alpine:init', () => {
         historyLogs: [],
         rawHistory: 'No data yet.',
         loadingHistory: false,
+        historyPage: 1,
+        historyPageSize: 20,
         
         // Phases state
         phases: [],
@@ -479,6 +522,7 @@ document.addEventListener('alpine:init', () => {
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'API Error');
                 
+                this.historyPage = 1;
                 this.historyLogs = data;
                 this.rawHistory = JSON.stringify(data, null, 2);
                 
@@ -546,6 +590,50 @@ document.addEventListener('alpine:init', () => {
                 console.error('Fetch health error:', err);
             } finally {
                 this.loadingHealth = false;
+            }
+        },
+        
+        get paginatedHistoryLogs() {
+            const reversed = [...this.historyLogs].reverse();
+            const start = (this.historyPage - 1) * this.historyPageSize;
+            const end = start + this.historyPageSize;
+            return reversed.slice(start, end);
+        },
+        
+        get totalHistoryPages() {
+            return Math.ceil(this.historyLogs.length / this.historyPageSize) || 1;
+        },
+        
+        get visibleHistoryPages() {
+            const pages = [];
+            const total = this.totalHistoryPages;
+            const current = this.historyPage;
+            const range = 2;
+            for (let i = 1; i <= total; i++) {
+                if (i === 1 || i === total || (i >= current - range && i <= current + range)) {
+                    pages.push(i);
+                } else if (pages[pages.length - 1] !== '...') {
+                    pages.push('...');
+                }
+            }
+            return pages;
+        },
+        
+        prevHistoryPage() {
+            if (this.historyPage > 1) {
+                this.historyPage--;
+            }
+        },
+        
+        nextHistoryPage() {
+            if (this.historyPage < this.totalHistoryPages) {
+                this.historyPage++;
+            }
+        },
+        
+        setHistoryPage(page) {
+            if (page >= 1 && page <= this.totalHistoryPages) {
+                this.historyPage = page;
             }
         },
         

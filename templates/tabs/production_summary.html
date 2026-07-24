@@ -1,8 +1,10 @@
 <div style="display:flex; justify-content:space-between; align-items:center;">
     <h2>System Summary</h2>
     <button class="refresh-btn" @click="fetchSummary()" :disabled="loadingSummary">
-        <span x-show="!loadingSummary">Refresh Summary</span>
-        <span x-show="loadingSummary" class="loading">Refreshing...</span>
+        <span class="btn-content-stack">
+            <span :class="{ 'invisible-text': loadingSummary }">Refresh Summary</span>
+            <span :class="{ 'invisible-text': !loadingSummary }" class="loading">Refreshing...</span>
+        </span>
     </button>
 </div>
 

@@ -2,7 +2,10 @@
     <h2 style="margin: 0;">Daily Energy History</h2>
     <div class="tab-controls">
         <button class="refresh-btn" @click="syncDatabase()" :disabled="loadingHistory">
-            <span x-text="loadingHistory ? 'Syncing...' : 'Sync Database Now'"></span>
+            <span class="btn-content-stack">
+                <span :class="{ 'invisible-text': loadingHistory }">Sync Database Now</span>
+                <span :class="{ 'invisible-text': !loadingHistory }" class="loading">Syncing...</span>
+            </span>
         </button>
     </div>
 </div>
@@ -39,7 +42,7 @@
                         <td colspan="6" style="padding: 1.5rem; text-align: center; color: var(--text-muted);">No historical data in database yet. Try running "Sync Database Now".</td>
                     </tr>
                 </template>
-                <template x-for="row in [...historyLogs].reverse()" :key="row.date">
+                <template x-for="row in paginatedHistoryLogs" :key="row.date">
                     <tr style="border-bottom: 1px solid var(--border-color);">
                         <td style="padding: 0.8rem 0.5rem; font-weight: bold; color: var(--text-main);" x-text="row.date"></td>
                         <td style="padding: 0.8rem 0.5rem; color: var(--success); font-weight: 500;" x-text="row.production_kwh.toFixed(2) + ' kWh'"></td>
@@ -55,4 +58,31 @@
             </tbody>
         </table>
     </div>
+    
+    <!-- Pagination Controls -->
+    <template x-if="historyLogs.length > 0">
+        <div class="pagination-controls">
+            <div class="pagination-info">
+                Showing <span style="font-weight: bold; color: var(--text-main);" x-text="Math.min((historyPage - 1) * historyPageSize + 1, historyLogs.length)"></span> to 
+                <span style="font-weight: bold; color: var(--text-main);" x-text="Math.min(historyPage * historyPageSize, historyLogs.length)"></span> of 
+                <span style="font-weight: bold; color: var(--text-main);" x-text="historyLogs.length"></span> entries
+            </div>
+            <div class="pagination-buttons">
+                <button class="pagination-btn" @click="prevHistoryPage()" :disabled="historyPage === 1">Prev</button>
+                
+                <template x-for="(page, idx) in visibleHistoryPages" :key="idx">
+                    <span>
+                        <template x-if="page === '...'">
+                            <span class="pagination-ellipsis">...</span>
+                        </template>
+                        <template x-if="page !== '...'">
+                            <button class="pagination-btn" :class="{ 'active': historyPage === page }" @click="setHistoryPage(page)" x-text="page"></button>
+                        </template>
+                    </span>
+                </template>
+                
+                <button class="pagination-btn" @click="nextHistoryPage()" :disabled="historyPage === totalHistoryPages">Next</button>
+            </div>
+        </div>
+    </template>
 </div>

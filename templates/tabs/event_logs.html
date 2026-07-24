@@ -1,7 +1,10 @@
 <div style="display:flex; justify-content:space-between; align-items:center;">
     <h2>System Event Logs</h2>
     <button class="refresh-btn" @click="fetchEvents()" :disabled="loadingEvents">
-        <span x-text="loadingEvents ? 'Refreshing...' : 'Refresh Events'"></span>
+        <span class="btn-content-stack">
+            <span :class="{ 'invisible-text': loadingEvents }">Refresh Events</span>
+            <span :class="{ 'invisible-text': !loadingEvents }" class="loading">Refreshing...</span>
+        </span>
     </button>
 </div>
 

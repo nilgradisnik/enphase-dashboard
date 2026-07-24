@@ -9,8 +9,10 @@
             <option value="5000">5 Seconds</option>
         </select>
         <button class="refresh-btn" @click="fetchMeters()" :disabled="loadingMeters">
-            <span x-show="!loadingMeters">Refresh</span>
-            <span x-show="loadingMeters" class="loading">Refreshing...</span>
+            <span class="btn-content-stack">
+                <span :class="{ 'invisible-text': loadingMeters }">Refresh</span>
+                <span :class="{ 'invisible-text': !loadingMeters }" class="loading">Refreshing...</span>
+            </span>
         </button>
     </div>
 </div>

@@ -185,9 +185,9 @@ body {
     background: var(--primary);
     color: white;
     border: none;
-    padding: 0;
+    padding: 0 1.25rem;
     height: 2.25rem;
-    width: 9rem;
+    width: auto;
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -466,6 +466,88 @@ select:focus {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
     border-color: var(--accent-border);
+}
+
+/* Stack container for buttons to avoid layout shifts when loading */
+.btn-content-stack {
+    display: inline-grid;
+    grid-template-areas: "stack";
+    align-items: center;
+    justify-content: center;
+}
+.btn-content-stack > * {
+    grid-area: stack;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+.btn-content-stack .invisible-text {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Pagination controls for Detailed History Log */
+.pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.pagination-info {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.pagination-btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-card);
+    background: var(--bg-card);
+    color: var(--text-main);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+.pagination-btn:hover:not(:disabled) {
+    background: var(--primary-light);
+    border-color: var(--primary-border);
+    color: var(--primary);
+}
+.pagination-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+.pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.pagination-ellipsis {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--text-muted);
+    font-weight: 600;
 }
 
 
