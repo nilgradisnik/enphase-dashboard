@@ -642,7 +642,7 @@ document.addEventListener('alpine:init', () => {
             if (!statusArray || statusArray.length === 0) return 'Unknown';
             return statusArray.map(status => {
                 if (status === 'envoy.global.ok') return 'Normal';
-                if (status.includes('acvoltageoosp1')) return 'AC Voltage Out of Range';
+                if (status.includes('acvoltageoosp1')) return 'AC Voltage OOS';
                 return status.replace('envoy.cond_flags.pcu_chan.', '').replace('envoy.', '');
             }).join(', ');
         },
