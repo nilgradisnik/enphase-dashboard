@@ -169,11 +169,14 @@ function renderEffectivenessChart(data) {
         effectivenessChartInstance.destroy();
     }
     
-    const dates = data.map(d => formatChartDate(d.date));
-    const productions = data.map(d => d.production_kwh);
-    const imports = data.map(d => d.import_kwh);
+    // Limit chart data to the last 14 days
+    const chartData = data.slice(-14);
     
-    const effectiveness = data.map(d => {
+    const dates = chartData.map(d => formatChartDate(d.date));
+    const productions = chartData.map(d => d.production_kwh);
+    const imports = chartData.map(d => d.import_kwh);
+    
+    const effectiveness = chartData.map(d => {
         const cons = d.consumption_kwh;
         if (cons <= 0) return 0;
         return (d.production_kwh / cons) * 100;
@@ -288,8 +291,8 @@ function renderEffectivenessChart(data) {
                     callbacks: {
                         title: function(context) {
                             const dataIndex = context[0].dataIndex;
-                            if (data[dataIndex]) {
-                                return formatChartDateLong(data[dataIndex].date);
+                            if (chartData[dataIndex]) {
+                                return formatChartDateLong(chartData[dataIndex].date);
                             }
                             return context[0].label;
                         },
