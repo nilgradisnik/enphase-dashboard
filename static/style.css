@@ -44,7 +44,7 @@ body {
     background: var(--bg-main);
     color: var(--text-main);
     margin: 0;
-    padding: 2rem 1.5rem;
+    padding: 1.25rem 1rem;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
 }
@@ -53,7 +53,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     background: var(--bg-card);
-    padding: 2.5rem;
+    padding: 1.5rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-color);
@@ -61,12 +61,12 @@ body {
 
 /* Header styling */
 .app-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
 }
 
 .app-title {
     color: var(--text-main);
-    font-size: 2.25rem;
+    font-size: 1.75rem;
     font-weight: 800;
     margin: 0 0 0.5rem 0;
     letter-spacing: -0.5px;
@@ -99,7 +99,7 @@ body {
 .tabs {
     display: flex;
     border-bottom: 1px solid var(--border-card);
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
     overflow-x: auto;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
@@ -110,11 +110,11 @@ body {
 }
 
 .tab-btn {
-    padding: 0.8rem 1.5rem;
+    padding: 0.5rem 1.1rem;
     border: none;
     background: none;
     cursor: pointer;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-muted);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -141,8 +141,8 @@ body {
 /* Dashboard Elements */
 .data-box {
     border: 1px solid var(--border-card);
-    padding: 1.75rem;
-    margin-top: 1.5rem;
+    padding: 1.1rem;
+    margin-top: 1rem;
     border-radius: var(--radius-md);
     background: var(--bg-card);
     box-shadow: var(--shadow-sm);
@@ -157,7 +157,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem 1.5rem;
+    padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--border-color);
     transition: background 0.15s ease;
     border-radius: var(--radius-sm);
@@ -170,12 +170,12 @@ body {
 }
 
 .live-val {
-    font-size: 2.25rem;
+    font-size: 1.65rem;
     font-weight: 800;
     letter-spacing: -0.5px;
 }
 .live-label {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: var(--text-main);
     margin-bottom: 0.25rem;
@@ -393,12 +393,12 @@ select:focus {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1.25rem;
-    margin-top: 1.5rem;
+    margin-top: 1rem;
 }
 
 .metric-card {
     margin: 0;
-    padding: 1.5rem 1.25rem;
+    padding: 1rem 1rem;
     border-radius: var(--radius-md);
     background: var(--bg-card);
     border: 1px solid var(--border-card);
@@ -414,15 +414,15 @@ select:focus {
     border-color: var(--accent-border);
 }
 .metric-card-title {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
     color: var(--text-muted);
     font-weight: 700;
     letter-spacing: 0.75px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 .metric-card-value {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
     font-weight: 800;
     letter-spacing: -0.5px;
     line-height: 1.2;

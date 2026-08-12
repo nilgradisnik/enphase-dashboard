@@ -41,7 +41,7 @@
     </div>
 
     <!-- 3. Consumption -->
-    <div class="live-card" style="background: var(--accent-light); border-top: 2px solid var(--accent); margin-top: 1.5rem;">
+    <div class="live-card" style="background: var(--accent-light); border-top: 2px solid var(--accent); margin-top: 0.75rem;">
         <div>
             <div class="live-label">House Consumption</div>
             <div class="live-subtext" style="font-size:0.85rem; color: var(--text-muted);">Total power being used by home</div>
@@ -51,48 +51,42 @@
 </div>
 
 <!-- Daily Solar Status -->
-<div class="data-box" x-show="hasTodayStats" style="margin-top: 1.5rem;">
-    <h3 style="margin-top: 0; color: var(--text-main); font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
-        Daily Solar Status <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);" x-text="'(' + todayDate + ')'"></span>
+<div class="data-box" x-show="hasTodayStats" style="margin-top: 1rem;">
+    <h3 style="margin-top: 0; color: var(--text-main); font-weight: 700; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; margin-bottom: 0.75rem;">
+        Daily Solar Status <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);" x-text="'(' + todayDate + ')'"></span>
     </h3>
     <div class="live-metric-grid">
-        <div class="metric-card solar" style="padding: 1rem 0.85rem;">
-            <div class="metric-card-title" style="font-size: 0.7rem; margin-bottom: 0.25rem;">Solar Production</div>
-            <div class="metric-card-value" style="font-size: 1.35rem;" x-text="todayProduction.toFixed(2) + ' kWh'">0.00 kWh</div>
+        <div class="metric-card solar" style="padding: 0.6rem 0.75rem;">
+            <div class="metric-card-title" style="font-size: 0.65rem; margin-bottom: 0.15rem;">Solar Production</div>
+            <div class="metric-card-value" style="font-size: 1.2rem;" x-text="todayProduction.toFixed(2) + ' kWh'">0.00 kWh</div>
         </div>
-        <div class="metric-card consumed" style="padding: 1rem 0.85rem;">
-            <div class="metric-card-title" style="font-size: 0.7rem; margin-bottom: 0.25rem;">House Consumption</div>
-            <div class="metric-card-value" style="font-size: 1.35rem;" x-text="todayConsumption.toFixed(2) + ' kWh'">0.00 kWh</div>
+        <div class="metric-card consumed" style="padding: 0.6rem 0.75rem;">
+            <div class="metric-card-title" style="font-size: 0.65rem; margin-bottom: 0.15rem;">House Consumption</div>
+            <div class="metric-card-value" style="font-size: 1.2rem;" x-text="todayConsumption.toFixed(2) + ' kWh'">0.00 kWh</div>
         </div>
-        <div class="metric-card exported" style="padding: 1rem 0.85rem;">
-            <div class="metric-card-title" style="font-size: 0.7rem; margin-bottom: 0.25rem;">Grid Exported</div>
-            <div class="metric-card-value" style="font-size: 1.35rem;" x-text="todayExport.toFixed(2) + ' kWh'">0.00 kWh</div>
+        <div class="metric-card exported" style="padding: 0.6rem 0.75rem;">
+            <div class="metric-card-title" style="font-size: 0.65rem; margin-bottom: 0.15rem;">Grid Exported</div>
+            <div class="metric-card-value" style="font-size: 1.2rem;" x-text="todayExport.toFixed(2) + ' kWh'">0.00 kWh</div>
         </div>
         <div class="metric-card" 
              :style="{ borderLeft: todayNetGrid < 0 ? '4px solid var(--success)' : (todayNetGrid > 0 ? '4px solid var(--danger)' : '4px solid var(--accent)') }"
-             style="padding: 1rem 0.85rem;">
-            <div class="metric-card-title" style="font-size: 0.7rem; margin-bottom: 0.25rem;">Net Grid Flow</div>
+             style="padding: 0.6rem 0.75rem;">
+            <div class="metric-card-title" style="font-size: 0.65rem; margin-bottom: 0.15rem;">Net Grid Flow</div>
             <div class="metric-card-value" 
                  :style="{ color: todayNetGrid < 0 ? 'var(--success)' : (todayNetGrid > 0 ? 'var(--danger)' : 'var(--text-main)') }"
-                 style="font-size: 1.35rem;" 
+                 style="font-size: 1.2rem;" 
                  x-text="(todayNetGrid > 0 ? '+' : '') + todayNetGrid.toFixed(2) + ' kWh'">
                 0.00 kWh
             </div>
         </div>
-        <div class="metric-card consumed" style="padding: 1rem 0.85rem;">
-            <div class="metric-card-title" style="font-size: 0.7rem; margin-bottom: 0.25rem;">Grid Imported</div>
-            <div class="metric-card-value" style="font-size: 1.35rem;" x-text="todayImport.toFixed(2) + ' kWh'">0.00 kWh</div>
+        <div class="metric-card consumed" style="padding: 0.6rem 0.75rem;">
+            <div class="metric-card-title" style="font-size: 0.65rem; margin-bottom: 0.15rem;">Grid Imported</div>
+            <div class="metric-card-value" style="font-size: 1.2rem;" x-text="todayImport.toFixed(2) + ' kWh'">0.00 kWh</div>
         </div>
-        <div class="metric-card offset" style="padding: 1rem 0.85rem;">
-            <div class="metric-card-title" style="font-size: 0.7rem; margin-bottom: 0.25rem;">Solar Coverage</div>
-            <div class="metric-card-value" style="font-size: 1.35rem;" x-text="todayCoverage.toFixed(1) + '%'">0.0%</div>
+        <div class="metric-card offset" style="padding: 0.6rem 0.75rem;">
+            <div class="metric-card-title" style="font-size: 0.65rem; margin-bottom: 0.15rem;">Solar Coverage</div>
+            <div class="metric-card-value" style="font-size: 1.2rem;" x-text="todayCoverage.toFixed(1) + '%'">0.0%</div>
         </div>
     </div>
 </div>
 
-<div class="data-box">
-    <details>
-        <summary>Raw Meters JSON</summary>
-        <pre x-text="rawMeters">No data yet.</pre>
-    </details>
-</div>
