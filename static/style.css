@@ -550,4 +550,25 @@ select:focus {
     font-weight: 600;
 }
 
+/* 3x3 (3-column) grid for Daily Solar Status on Live tab */
+.live-metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .live-metric-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .live-metric-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 

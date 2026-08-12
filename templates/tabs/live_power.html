@@ -37,7 +37,7 @@
             <div class="live-label" x-text="gridPower < 0 ? 'Exporting to Grid' : 'Importing from Grid'">Grid Flow</div>
             <div class="live-subtext" style="font-size:0.85rem; color: var(--text-muted);">Net flow at the meter</div>
         </div>
-        <div class="live-val" :style="{ color: gridPower < 0 ? 'var(--primary)' : 'var(--danger)' }" x-text="formatPower(Math.abs(gridPower))">0 W</div>
+        <div class="live-val" :style="{ color: gridPower < 0 ? 'var(--success)' : 'var(--danger)' }" x-text="formatPower(Math.abs(gridPower))">0 W</div>
     </div>
 
     <!-- 3. Consumption -->
@@ -55,12 +55,12 @@
     <h3 style="margin-top: 0; color: var(--text-main); font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
         Daily Solar Status <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);" x-text="'(' + todayDate + ')'"></span>
     </h3>
-    <div class="metric-cards-grid" style="margin-top: 1rem;">
+    <div class="live-metric-grid">
         <div class="metric-card solar" style="padding: 1rem 0.85rem;">
             <div class="metric-card-title" style="font-size: 0.7rem; margin-bottom: 0.25rem;">Solar Production</div>
             <div class="metric-card-value" style="font-size: 1.35rem;" x-text="todayProduction.toFixed(2) + ' kWh'">0.00 kWh</div>
         </div>
-        <div class="metric-card imported" style="padding: 1rem 0.85rem;">
+        <div class="metric-card consumed" style="padding: 1rem 0.85rem;">
             <div class="metric-card-title" style="font-size: 0.7rem; margin-bottom: 0.25rem;">Grid Imported</div>
             <div class="metric-card-value" style="font-size: 1.35rem;" x-text="todayImport.toFixed(2) + ' kWh'">0.00 kWh</div>
         </div>
@@ -69,11 +69,11 @@
             <div class="metric-card-value" style="font-size: 1.35rem;" x-text="todayExport.toFixed(2) + ' kWh'">0.00 kWh</div>
         </div>
         <div class="metric-card" 
-             :style="{ borderLeft: todayNetGrid < 0 ? '4px solid var(--primary)' : (todayNetGrid > 0 ? '4px solid var(--danger)' : '4px solid var(--accent)') }"
+             :style="{ borderLeft: todayNetGrid < 0 ? '4px solid var(--success)' : (todayNetGrid > 0 ? '4px solid var(--danger)' : '4px solid var(--accent)') }"
              style="padding: 1rem 0.85rem;">
             <div class="metric-card-title" style="font-size: 0.7rem; margin-bottom: 0.25rem;">Net Grid Flow</div>
             <div class="metric-card-value" 
-                 :style="{ color: todayNetGrid < 0 ? 'var(--primary)' : (todayNetGrid > 0 ? 'var(--danger)' : 'var(--text-main)') }"
+                 :style="{ color: todayNetGrid < 0 ? 'var(--success)' : (todayNetGrid > 0 ? 'var(--danger)' : 'var(--text-main)') }"
                  style="font-size: 1.35rem;" 
                  x-text="(todayNetGrid > 0 ? '+' : '') + todayNetGrid.toFixed(2) + ' kWh'">
                 0.00 kWh
