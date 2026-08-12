@@ -510,6 +510,13 @@ document.addEventListener('alpine:init', () => {
         consPower: 0,
         rawMeters: 'No data yet.',
         loadingMeters: false,
+        todayDate: '',
+        todayProduction: 0,
+        todayImport: 0,
+        todayExport: 0,
+        todayConsumption: 0,
+        todayCoverage: 0,
+        hasTodayStats: false,
         
         // Summary state
         lifetimeSolar: '',
@@ -644,6 +651,26 @@ document.addEventListener('alpine:init', () => {
                     this.prodPower = data[0].activePower || 0;
                     this.gridPower = data[1].activePower || 0;
                     this.consPower = this.prodPower + this.gridPower;
+                }
+
+                // Fetch daily history to extract today's stats
+                const historyRes = await fetch('/api/history/daily');
+                if (historyRes.ok) {
+                    const historyData = await historyRes.json();
+                    if (historyData && historyData.length > 0) {
+                        const lastEntry = historyData[historyData.length - 1];
+                        this.todayDate = lastEntry.date || '';
+                        this.todayProduction = lastEntry.production_kwh || 0;
+                        this.todayImport = lastEntry.import_kwh || 0;
+                        this.todayExport = lastEntry.export_kwh || 0;
+                        this.todayConsumption = lastEntry.consumption_kwh || 0;
+                        this.todayCoverage = this.todayConsumption > 0 
+                            ? (this.todayProduction / this.todayConsumption * 100)
+                            : 0;
+                        this.hasTodayStats = true;
+                    } else {
+                        this.hasTodayStats = false;
+                    }
                 }
             } catch (err) {
                 console.error('Fetch meters error:', err);
