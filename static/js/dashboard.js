@@ -67,11 +67,14 @@ function renderHistoryChart(data) {
         historyChartInstance.destroy();
     }
     
-    const dates = data.map(d => formatChartDate(d.date));
-    const productions = data.map(d => d.production_kwh);
-    const exports = data.map(d => d.export_kwh);
-    const imports = data.map(d => d.import_kwh);
-    const consumptions = data.map(d => d.consumption_kwh);
+    // Limit chart data to the last 14 days
+    const chartData = data.slice(-14);
+    
+    const dates = chartData.map(d => formatChartDate(d.date));
+    const productions = chartData.map(d => d.production_kwh);
+    const exports = chartData.map(d => d.export_kwh);
+    const imports = chartData.map(d => d.import_kwh);
+    const consumptions = chartData.map(d => d.consumption_kwh);
     
     historyChartInstance = new Chart(ctx, {
         type: 'bar',
@@ -137,14 +140,14 @@ function renderHistoryChart(data) {
                     callbacks: {
                         title: function(context) {
                             const dataIndex = context[0].dataIndex;
-                            if (data[dataIndex]) {
-                                return formatChartDateLong(data[dataIndex].date);
+                            if (chartData[dataIndex]) {
+                                return formatChartDateLong(chartData[dataIndex].date);
                             }
                             return context[0].label;
                         },
                         afterBody: function(items) {
                             const dataIndex = items[0].dataIndex;
-                            if (data[dataIndex] && data[dataIndex].is_interpolated) {
+                            if (chartData[dataIndex] && chartData[dataIndex].is_interpolated) {
                                 return '\n* Estimated data due to server downtime';
                             }
                             return '';
