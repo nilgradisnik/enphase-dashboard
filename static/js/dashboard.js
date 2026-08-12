@@ -813,6 +813,12 @@ document.addEventListener('alpine:init', () => {
                 if (!pcuGroup) throw new Error('No inverters found in inventory');
 
                 this.inverters = pcuGroup.devices || [];
+                
+                // Fix the Envoy firmware bug where operating is false even when inverters are normal
+                this.inverters.forEach(inv => {
+                    inv.operating = inv.producing || (inv.device_status && inv.device_status.includes("envoy.global.ok"));
+                });
+
                 this.healthSummary = {
                     total: this.inverters.length,
                     operating: this.inverters.filter(i => i.operating).length,
