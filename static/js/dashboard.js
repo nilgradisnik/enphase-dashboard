@@ -1,5 +1,6 @@
 let historyChartInstance = null;
 let effectivenessChartInstance = null;
+let monthlyChartInstance = null;
 
 function formatChartDate(dateStr) {
     if (!dateStr) return '';
@@ -317,6 +318,186 @@ function renderEffectivenessChart(data) {
     });
 }
 
+function renderMonthlyChart(data) {
+    const canvas = document.getElementById('monthlyChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    if (monthlyChartInstance) {
+        monthlyChartInstance.destroy();
+    }
+    
+    // Limit chart data to the last 6 months
+    const chartData = data.slice(-6);
+    
+    // Format month labels, e.g. "2026-06" to "Jun '26"
+    const dates = chartData.map(d => {
+        const parts = d.month.split('-');
+        if (parts.length === 2) {
+            const year = parts[0].substring(2);
+            const monthIndex = parseInt(parts[1], 10) - 1;
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            if (monthIndex >= 0 && monthIndex < 12) {
+                return `${months[monthIndex]} '${year}`;
+            }
+        }
+        return d.month;
+    });
+    
+    const productions = chartData.map(d => d.production_kwh);
+    const imports = chartData.map(d => d.import_kwh);
+    
+    const effectiveness = chartData.map(d => {
+        const cons = d.consumption_kwh;
+        if (cons <= 0) return 0;
+        return (d.production_kwh / cons) * 100;
+    });
+
+    const indices = effectiveness.map((_, idx) => idx);
+    const trendValues = calculateLinearRegression(indices, effectiveness);
+    
+    monthlyChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: 'Solar Production (kWh)',
+                    type: 'bar',
+                    data: productions,
+                    backgroundColor: 'rgba(16, 185, 129, 0.25)',
+                    borderColor: '#10b981',
+                    borderWidth: 1.5,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Grid Import (kWh)',
+                    type: 'bar',
+                    data: imports,
+                    backgroundColor: 'rgba(239, 68, 68, 0.25)',
+                    borderColor: '#ef4444',
+                    borderWidth: 1.5,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Solar Effectiveness (%)',
+                    type: 'line',
+                    data: effectiveness,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.05)',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.3,
+                    yAxisID: 'y1'
+                },
+                {
+                    label: 'Effectiveness Trend Line',
+                    type: 'line',
+                    data: trendValues,
+                    borderColor: 'rgba(139, 92, 246, 0.6)',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [6, 6],
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Monthly Energy (kWh)',
+                        font: { weight: 'bold' }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    max: Math.max(100, Math.ceil(Math.max(...effectiveness) / 50) * 50),
+                    title: {
+                        display: true,
+                        text: 'Solar Effectiveness (%)',
+                        font: { weight: 'bold' }
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        boxWidth: 12,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            const dataIndex = context[0].dataIndex;
+                            if (chartData[dataIndex]) {
+                                const parts = chartData[dataIndex].month.split('-');
+                                if (parts.length === 2) {
+                                    const year = parts[0];
+                                    const monthIndex = parseInt(parts[1], 10) - 1;
+                                    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                                    if (monthIndex >= 0 && monthIndex < 12) {
+                                        return `${months[monthIndex]} ${year}`;
+                                    }
+                                }
+                                return chartData[dataIndex].month;
+                            }
+                            return context[0].label;
+                        },
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                if (context.datasetIndex < 2) {
+                                    label += context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' kWh';
+                                } else {
+                                    label += context.parsed.y.toFixed(1) + '%';
+                                }
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 document.addEventListener('alpine:init', () => {
     Alpine.data('dashboard', () => ({
         activeTab: 'live-tab',
@@ -339,6 +520,7 @@ document.addEventListener('alpine:init', () => {
         rawSummary: 'No data yet.',
         loadingSummary: false,
         showEffectivenessChart: false,
+        showMonthlyChart: false,
         
         // History state
         historyLogs: [],
@@ -473,10 +655,12 @@ document.addEventListener('alpine:init', () => {
         async fetchSummary() {
             this.loadingSummary = true;
             this.showEffectivenessChart = false;
+            this.showMonthlyChart = false;
             try {
-                const [resMeters, resHistory] = await Promise.all([
+                const [resMeters, resHistory, resMonthly] = await Promise.all([
                     fetch('/api/meters'),
-                    fetch('/api/history/daily')
+                    fetch('/api/history/daily'),
+                    fetch('/api/history/monthly')
                 ]);
                 
                 const data = await resMeters.json();
@@ -511,6 +695,16 @@ document.addEventListener('alpine:init', () => {
                         this.showEffectivenessChart = true;
                         this.$nextTick(() => {
                             renderEffectivenessChart(historyData);
+                        });
+                    }
+                }
+
+                if (resMonthly.ok) {
+                    const monthlyData = await resMonthly.json();
+                    if (monthlyData && monthlyData.length > 0) {
+                        this.showMonthlyChart = true;
+                        this.$nextTick(() => {
+                            renderMonthlyChart(monthlyData);
                         });
                     }
                 }

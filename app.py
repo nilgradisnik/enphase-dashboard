@@ -124,6 +124,40 @@ def daily_history_api():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/history/monthly')
+def monthly_history_api():
+    try:
+        stats = DailyStats.query.order_by(DailyStats.date.asc()).all()
+        monthly_data = {}
+        for s in stats:
+            month_str = s.date.strftime('%Y-%m')
+            if month_str not in monthly_data:
+                monthly_data[month_str] = {
+                    'month': month_str,
+                    'production_kwh': 0.0,
+                    'import_kwh': 0.0,
+                    'export_kwh': 0.0,
+                    'consumption_kwh': 0.0
+                }
+            monthly_data[month_str]['production_kwh'] += s.production_kwh
+            monthly_data[month_str]['import_kwh'] += s.import_kwh
+            monthly_data[month_str]['export_kwh'] += s.export_kwh
+            monthly_data[month_str]['consumption_kwh'] += s.consumption_kwh
+            
+        result = []
+        for month in sorted(monthly_data.keys()):
+            m_data = monthly_data[month]
+            result.append({
+                'month': m_data['month'],
+                'production_kwh': round(m_data['production_kwh'], 2),
+                'import_kwh': round(m_data['import_kwh'], 2),
+                'export_kwh': round(m_data['export_kwh'], 2),
+                'consumption_kwh': round(m_data['consumption_kwh'], 2)
+            })
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/history/refresh', methods=['POST'])
 def refresh_history_api():
     try:

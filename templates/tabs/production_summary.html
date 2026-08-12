@@ -50,6 +50,19 @@
     </div>
 </div>
 
+<!-- Monthly Solar Effectiveness Chart -->
+<div id="monthly-chart-container" class="data-box" style="background: white; border: 1px solid var(--border-card); padding: 1.5rem; margin-top: 1.5rem;" x-show="showMonthlyChart">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
+        <h3 style="margin: 0; color: var(--primary);">Monthly Solar vs. Grid Usage & Effectiveness</h3>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">
+            Effectiveness = (Solar Production / House Consumption) × 100% (Last 6 Months)
+        </span>
+    </div>
+    <div style="width: 100%; height: 350px; position: relative;">
+        <canvas id="monthlyChart"></canvas>
+    </div>
+</div>
+
 <div class="data-box" style="margin-top: 1.5rem;">
     <details>
         <summary>Raw Summary JSON</summary>
