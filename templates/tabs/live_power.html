@@ -68,6 +68,17 @@
             <div class="metric-card-title" style="font-size: 0.7rem; margin-bottom: 0.25rem;">Grid Exported</div>
             <div class="metric-card-value" style="font-size: 1.35rem;" x-text="todayExport.toFixed(2) + ' kWh'">0.00 kWh</div>
         </div>
+        <div class="metric-card" 
+             :style="{ borderLeft: todayNetGrid < 0 ? '4px solid var(--primary)' : (todayNetGrid > 0 ? '4px solid var(--danger)' : '4px solid var(--accent)') }"
+             style="padding: 1rem 0.85rem;">
+            <div class="metric-card-title" style="font-size: 0.7rem; margin-bottom: 0.25rem;">Net Grid Flow</div>
+            <div class="metric-card-value" 
+                 :style="{ color: todayNetGrid < 0 ? 'var(--primary)' : (todayNetGrid > 0 ? 'var(--danger)' : 'var(--text-main)') }"
+                 style="font-size: 1.35rem;" 
+                 x-text="(todayNetGrid > 0 ? '+' : '') + todayNetGrid.toFixed(2) + ' kWh'">
+                0.00 kWh
+            </div>
+        </div>
         <div class="metric-card consumed" style="padding: 1rem 0.85rem;">
             <div class="metric-card-title" style="font-size: 0.7rem; margin-bottom: 0.25rem;">House Consumption</div>
             <div class="metric-card-value" style="font-size: 1.35rem;" x-text="todayConsumption.toFixed(2) + ' kWh'">0.00 kWh</div>

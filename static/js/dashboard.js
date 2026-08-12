@@ -514,6 +514,7 @@ document.addEventListener('alpine:init', () => {
         todayProduction: 0,
         todayImport: 0,
         todayExport: 0,
+        todayNetGrid: 0,
         todayConsumption: 0,
         todayCoverage: 0,
         hasTodayStats: false,
@@ -663,6 +664,7 @@ document.addEventListener('alpine:init', () => {
                         this.todayProduction = lastEntry.production_kwh || 0;
                         this.todayImport = lastEntry.import_kwh || 0;
                         this.todayExport = lastEntry.export_kwh || 0;
+                        this.todayNetGrid = this.todayImport - this.todayExport;
                         this.todayConsumption = lastEntry.consumption_kwh || 0;
                         this.todayCoverage = this.todayConsumption > 0 
                             ? (this.todayProduction / this.todayConsumption * 100)
