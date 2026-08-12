@@ -570,5 +570,15 @@ select:focus {
     }
 }
 
+/* Tab content main titles */
+.tab-content h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-main);
+    letter-spacing: -0.25px;
+}
+
+
 
 

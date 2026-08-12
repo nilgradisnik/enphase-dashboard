@@ -53,7 +53,7 @@
 <!-- Daily Solar Status -->
 <div class="data-box" x-show="hasTodayStats" style="margin-top: 1rem;">
     <h3 style="margin-top: 0; color: var(--text-main); font-weight: 700; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; margin-bottom: 0.75rem;">
-        Daily Solar Status <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);" x-text="'(' + todayDate + ')'"></span>
+        Daily Solar Status <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);" x-text="'(' + formatDateLong(todayDate) + ')'"></span>
     </h3>
     <div class="live-metric-grid">
         <div class="metric-card solar" style="padding: 0.6rem 0.75rem;">

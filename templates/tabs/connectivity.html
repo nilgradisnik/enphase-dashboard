@@ -15,7 +15,7 @@
 <template x-if="connectivity">
     <div style="margin-top: 1.5rem;">
         <div class="responsive-grid">
-            <div class="data-box" style="margin-top:0; padding: 1.5rem 1.75rem;">
+            <div class="data-box" style="margin-top:0;">
                 <p style="margin: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
                     <strong>MQTT State:</strong> 
                     <span class="status-tag" :class="isOkState(connectivity.mqtt_state) ? 'status-ok' : 'status-err'" x-text="connectivity.mqtt_state.toUpperCase()"></span>
@@ -29,7 +29,7 @@
                     <span class="status-tag" :class="isOkState(connectivity.auth_state) ? 'status-ok' : 'status-err'" x-text="connectivity.auth_state.toUpperCase()"></span>
                 </p>
             </div>
-            <div class="data-box" style="margin-top:0; padding: 1.5rem 1.75rem;">
+            <div class="data-box" style="margin-top:0;">
                 <p style="margin: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
                     <strong>Cloud Stream:</strong> 
                     <span class="status-tag" :class="isOkState(connectivity.sc_stream) ? 'status-ok' : 'status-err'" x-text="connectivity.sc_stream.toUpperCase()"></span>

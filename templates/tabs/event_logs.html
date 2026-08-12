@@ -16,10 +16,10 @@
     <p style="color: var(--success); font-weight: bold; margin: 0;">✓ No active system alerts.</p>
 </div>
 
-<div class="data-box" x-show="events.length > 0" style="padding: 0; overflow: hidden; margin-top: 1.5rem;">
+<div class="data-box" x-show="events.length > 0" style="padding: 0; overflow: hidden; margin-top: 1rem;">
     <ul style="list-style: none; padding: 0; margin: 0;">
         <template x-for="(alert, idx) in events" :key="idx">
-            <li style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px;">
+            <li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px;">
                 <span class="status-tag status-err">ALERT</span>
                 <span x-text="alert" style="color: var(--text-main); font-weight: 500;"></span>
             </li>

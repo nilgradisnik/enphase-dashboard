@@ -634,6 +634,10 @@ document.addEventListener('alpine:init', () => {
             return new Date(timestamp * 1000).toLocaleString();
         },
         
+        formatDateLong(dateStr) {
+            return formatChartDateLong(dateStr);
+        },
+        
         isOkState(val) {
             if (!val) return false;
             return ['connected', 'ok', 'configured', 'enabled'].includes(val.toLowerCase());
