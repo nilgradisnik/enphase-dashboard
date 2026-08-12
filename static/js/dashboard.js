@@ -638,6 +638,15 @@ document.addEventListener('alpine:init', () => {
             return formatChartDateLong(dateStr);
         },
         
+        formatInverterStatus(statusArray) {
+            if (!statusArray || statusArray.length === 0) return 'Unknown';
+            return statusArray.map(status => {
+                if (status === 'envoy.global.ok') return 'Normal';
+                if (status.includes('acvoltageoosp1')) return 'AC Voltage Out of Range';
+                return status.replace('envoy.cond_flags.pcu_chan.', '').replace('envoy.', '');
+            }).join(', ');
+        },
+        
         isOkState(val) {
             if (!val) return false;
             return ['connected', 'ok', 'configured', 'enabled'].includes(val.toLowerCase());

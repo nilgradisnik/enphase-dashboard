@@ -29,7 +29,7 @@
                 <strong>Reported:</strong> <span style="color: var(--text-main);" x-text="formatDate(inv.last_rpt_date)"></span>
             </p>
             <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--danger);" x-show="inv.device_status && !inv.device_status.includes('envoy.global.ok')">
-                <strong>Status:</strong> <span style="font-weight: 600;" x-text="inv.device_status.join(', ')"></span>
+                <strong>Status:</strong> <span style="font-weight: 600;" x-text="formatInverterStatus(inv.device_status)"></span>
             </p>
             <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.75rem;">
                 <span class="status-tag tag-sm" :class="inv.operating ? 'status-ok' : 'status-err'">OP</span>
