@@ -6,5 +6,10 @@ __pycache__/
 instance/
 *.db
 
+# Local configuration files
+configuration/config.yml
+configuration/system.yml
+.env
+
 # OS files
 .DS_Store

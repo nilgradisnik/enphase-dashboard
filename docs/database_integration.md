@@ -86,10 +86,10 @@ If the server is offline for multiple days, a gap is detected between the last r
 
 ## 4. Summary of Code Implementations
 
-* **[db.py](file:///home/nil/code/enphase-dashboard/db.py)**: Configures Flask-SQLAlchemy and holds the model schemas for both tables. Using naive UTC datetimes prevents type mismatch errors across SQLite and Postgres.
-* **[dashboard_services.py](file:///home/nil/code/enphase-dashboard/dashboard_services.py)**: Houses background collection, daily aggregation math, and linear gap interpolation logic.
-* **[app.py](file:///home/nil/code/enphase-dashboard/app.py)**: Connects the database configuration, starts `Flask-APScheduler` to poll the Envoy local API every 15 minutes, handles circular startup dependencies, and registers historical HTTP routes (`/api/history/daily` and `/api/history/refresh`).
-* **[docker-compose.yml](file:///home/nil/code/enphase-dashboard/docker-compose.yml)**: Integrates an `enphase-db` PostgreSQL service with a persistent volume to back the production deployment.
-* **[templates/base.html](file:///home/nil/code/enphase-dashboard/templates/base.html)**: Includes the Chart.js script tag and adds the "Daily History" tab button.
-* **[templates/tabs/history.html](file:///home/nil/code/enphase-dashboard/templates/tabs/history.html)**: Layout containing the Chart.js canvas and detailed tabular data logging.
-* **[static/js/dashboard.js](file:///home/nil/code/enphase-dashboard/static/js/dashboard.js)**: Implements historical lazy-loading, sync button API calls, and chart initialization.
+* **[db.py](../db.py)**: Configures Flask-SQLAlchemy and holds the model schemas for both tables. Using naive UTC datetimes prevents type mismatch errors across SQLite and Postgres.
+* **[dashboard_services.py](../dashboard_services.py)**: Houses background collection, daily aggregation math, and linear gap interpolation logic.
+* **[app.py](../app.py)**: Connects the database configuration, starts `Flask-APScheduler` to poll the Envoy local API every 15 minutes, handles circular startup dependencies, and registers historical HTTP routes (`/api/history/daily` and `/api/history/refresh`).
+* **[docker-compose.yml](../docker-compose.yml)**: Integrates an `enphase-db` PostgreSQL service with a persistent volume to back the production deployment.
+* **[templates/base.html](../templates/base.html)**: Includes the Chart.js script tag and adds the "Daily History" tab button.
+* **[templates/tabs/history.html](../templates/tabs/history.html)**: Layout containing the Chart.js canvas and detailed tabular data logging.
+* **[static/js/dashboard.js](../static/js/dashboard.js)**: Implements historical lazy-loading, sync button API calls, and chart initialization.

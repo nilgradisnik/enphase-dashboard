@@ -7,3 +7,9 @@ venv/
 .pytest_cache/
 .vscode/
 .idea/
+
+# Local sensitive configuration and databases
+configuration/config.yml
+configuration/system.yml
+instance/
+*.db
