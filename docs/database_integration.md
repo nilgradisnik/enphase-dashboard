@@ -66,11 +66,11 @@ To aggregate correctly without database type-mismatch or performance overhead:
 ### Daily Energy Calculation
 For any given date, energy metrics (in kWh) are computed as:
 1. **Solar Production**:
-   $$\text{Production} = \frac{\text{production\_wh}(T_{\text{last}}) - \text{production\_wh}(T_{\text{first}})}{1000}$$
+   $$\text{Production} = \frac{\text{production}_{\text{wh}}(T_{\text{last}}) - \text{production}_{\text{wh}}(T_{\text{first}})}{1000}$$
 2. **Grid Export**:
-   $$\text{Grid Export} = \frac{\text{export\_wh}(T_{\text{last}}) - \text{export\_wh}(T_{\text{first}})}{1000}$$
+   $$\text{Grid Export} = \frac{\text{export}_{\text{wh}}(T_{\text{last}}) - \text{export}_{\text{wh}}(T_{\text{first}})}{1000}$$
 3. **Grid Import**:
-   $$\text{Grid Import} = \frac{\text{import\_wh}(T_{\text{last}}) - \text{import\_wh}(T_{\text{first}})}{1000}$$
+   $$\text{Grid Import} = \frac{\text{import}_{\text{wh}}(T_{\text{last}}) - \text{import}_{\text{wh}}(T_{\text{first}})}{1000}$$
 4. **House Consumption**:
    $$\text{House Consumption} = \text{Solar Production} - \text{Grid Export} + \text{Grid Import}$$
 
