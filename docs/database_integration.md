@@ -66,18 +66,18 @@ To aggregate correctly without database type-mismatch or performance overhead:
 ### Daily Energy Calculation
 For any given date, energy metrics (in kWh) are computed as:
 1. **Solar Production**:
-   $$\text{Production} = \frac{\text{production}_{\text{wh}}(T_{\text{last}}) - \text{production}_{\text{wh}}(T_{\text{first}})}{1000}$$
+   `Production = (production_wh(T_last) - production_wh(T_first)) / 1000`
 2. **Grid Export**:
-   $$\text{Grid Export} = \frac{\text{export}_{\text{wh}}(T_{\text{last}}) - \text{export}_{\text{wh}}(T_{\text{first}})}{1000}$$
+   `Grid Export = (export_wh(T_last) - export_wh(T_first)) / 1000`
 3. **Grid Import**:
-   $$\text{Grid Import} = \frac{\text{import}_{\text{wh}}(T_{\text{last}}) - \text{import}_{\text{wh}}(T_{\text{first}})}{1000}$$
+   `Grid Import = (import_wh(T_last) - import_wh(T_first)) / 1000`
 4. **House Consumption**:
-   $$\text{House Consumption} = \text{Solar Production} - \text{Grid Export} + \text{Grid Import}$$
+   `House Consumption = Solar Production - Grid Export + Grid Import`
 
-*(Where $T_{\text{first}}$ is the first reading of the day and $T_{\text{last}}$ is the last reading of the day. If $T_{\text{first}}$ is missing, the last reading of the previous day is used.)*
+*(Where `T_first` is the first reading of the day and `T_last` is the last reading of the day. If `T_first` is missing, the last reading of the previous day is used.)*
 
 ### Handling Server Downtime (> 2 Hours)
-If the server is offline for multiple days, a gap is detected between the last recorded timestamp ($T_{\text{offline}}$) and the first new timestamp ($T_{\text{online}}$).
+If the server is offline for multiple days, a gap is detected between the last recorded timestamp (`T_offline`) and the first new timestamp (`T_online`).
 1. **Total Gap Delta**: The total accumulated energy difference during the gap is calculated. This difference is 100% accurate because the Enphase Envoy gateway continues counting.
 2. **Linear Interpolation**: The total energy delta is distributed proportionally across all calendar days spanned by the downtime based on the number of hours the day spent in downtime.
 3. **Estimation Flag**: Aggregated daily stats generated during gaps are flagged with `is_interpolated = True`. The frontend dashboard visually styles these days with an "Estimated" tag and chart tooltip warning to indicate that they are estimates.
