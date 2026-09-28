@@ -69,14 +69,16 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
     img = Image.new("L", (WIDTH, HEIGHT), color=255)
     draw = ImageDraw.Draw(img)
 
-    # Load custom fonts
-    font_blockkie_title = ImageFont.truetype(os.path.join(FONTS_DIR, "BlockKie.ttf"), 36)
-    font_blockkie_num = ImageFont.truetype(os.path.join(FONTS_DIR, "BlockKie.ttf"), 58)
-    font_box_label = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 20)
-    font_unit = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 28)
-    font_unit_long = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 21)
-    font_footer = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 17)
-    font_inter_time = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 20)
+    # Load single consolidated font
+    FONT_FILE = os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf")
+    font_title = ImageFont.truetype(FONT_FILE, 30)
+    font_time = ImageFont.truetype(FONT_FILE, 18)
+    font_box_label = ImageFont.truetype(FONT_FILE, 18)
+    font_num = ImageFont.truetype(FONT_FILE, 52)
+    font_num_sm = ImageFont.truetype(FONT_FILE, 44)
+    font_unit = ImageFont.truetype(FONT_FILE, 24)
+    font_unit_long = ImageFont.truetype(FONT_FILE, 16)
+    font_footer = ImageFont.truetype(FONT_FILE, 16)
 
     pad = 24
 
@@ -87,15 +89,17 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
 
     # Title
     title_str = str(data.get("title", "DAILY SOLAR STATUS")).upper()
-    draw.text((pad + 38, pad - 4), title_str, fill=0, font=font_blockkie_title)
+    t_bbox = draw.textbbox((0, 0), title_str, font=font_title, stroke_width=1)
+    t_h = t_bbox[3] - t_bbox[1]
+    draw.text((pad + 38, pad + (28 - t_h) // 2 - t_bbox[1]), title_str, fill=0, font=font_title, stroke_width=1)
 
     # Last Updated Time (right aligned)
     time_str = data.get("last_updated", "")
-    time_bbox = draw.textbbox((0, 0), time_str, font=font_inter_time)
+    time_bbox = draw.textbbox((0, 0), time_str, font=font_time)
     time_w = time_bbox[2] - time_bbox[0]
     time_h = time_bbox[3] - time_bbox[1]
-    time_y = pad + (36 - time_h) // 2
-    draw.text((WIDTH - pad - time_w, time_y), time_str, fill=0, font=font_inter_time)
+    time_y = pad + (28 - time_h) // 2 - time_bbox[1]
+    draw.text((WIDTH - pad - time_w, time_y), time_str, fill=0, font=font_time)
 
     # Header divider line (4px black line)
     header_line_y = pad + 40
@@ -139,17 +143,26 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
         num_str = stat["num"]
         unit_str = stat["unit"]
 
-        num_bbox = draw.textbbox((0, 0), num_str, font=font_blockkie_num)
-        num_w = num_bbox[2] - num_bbox[0]
+        u_font = font_unit_long if len(unit_str) > 5 else font_unit
+        u_bbox = draw.textbbox((0, 0), unit_str, font=u_font) if unit_str else (0, 0, 0, 0)
+        u_w = (u_bbox[2] - u_bbox[0]) if unit_str else 0
 
-        num_y = by2 - 68
-        draw.text((bx + 14, num_y), num_str, fill=0, font=font_blockkie_num)
+        n_font = font_num
+        n_bbox = draw.textbbox((0, 0), num_str, font=n_font, stroke_width=1)
+        n_w = n_bbox[2] - n_bbox[0]
+
+        # If combined width is tight for the card, use slightly smaller number size
+        if unit_str and (14 + n_w + 6 + u_w > col_w - 12):
+            n_font = font_num_sm
+            n_bbox = draw.textbbox((0, 0), num_str, font=n_font, stroke_width=1)
+            n_w = n_bbox[2] - n_bbox[0]
+
+        num_y = by2 - 64
+        draw.text((bx + 14, num_y), num_str, fill=0, font=n_font, stroke_width=1)
 
         if unit_str:
-            u_font = font_unit_long if len(unit_str) > 5 else font_unit
-            unit_baseline_offset = 21 if len(unit_str) > 5 else 28
-            unit_y = (num_y + 52) - unit_baseline_offset
-            draw.text((bx + 14 + num_w + 8, unit_y), unit_str, fill=0, font=u_font)
+            unit_y = (num_y + n_bbox[3]) - u_bbox[3]
+            draw.text((bx + 14 + n_w + 6, unit_y), unit_str, fill=0, font=u_font)
 
 
 

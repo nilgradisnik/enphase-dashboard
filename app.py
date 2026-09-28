@@ -2,8 +2,7 @@ import sys
 import os
 import json
 import yaml
-from datetime import datetime
-from flask import Flask, render_template, jsonify, send_file, request, make_response, render_template_string
+from flask import Flask, render_template, jsonify, send_file, request, make_response
 from flask_apscheduler import APScheduler
 from enphase_api.local.gateway import Gateway
 from db import db, MeterReading, DailyStats
@@ -235,116 +234,7 @@ def trmnl_log_api():
 @app.route('/api/trmnl', methods=['GET'])
 @app.route('/trmnl', methods=['GET'])
 def trmnl_preview_page():
-    html = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRMNL OG Display Preview</title>
-    <style>
-        body {
-            background: #18181b;
-            color: #f4f4f5;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .header {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .header h1 {
-            margin: 0 0 6px 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        .header p {
-            margin: 0;
-            color: #a1a1aa;
-            font-size: 0.9rem;
-        }
-        .device-bezel {
-            background: #27272a;
-            padding: 28px;
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.1);
-            border: 2px solid #3f3f46;
-        }
-        .screen-container {
-            width: 800px;
-            height: 480px;
-            background: #ffffff;
-            border-radius: 4px;
-            overflow: hidden;
-            display: flex;
-            box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.15);
-        }
-        .screen-container img {
-            width: 800px;
-            height: 480px;
-            display: block;
-            image-rendering: pixelated;
-        }
-        .controls {
-            margin-top: 24px;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .btn {
-            background: #3b82f6;
-            color: #ffffff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.15s ease;
-        }
-        .btn:hover { background: #2563eb; }
-        .btn-secondary {
-            background: #3f3f46;
-            color: #e4e4e7;
-        }
-        .btn-secondary:hover { background: #52525b; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>TRMNL OG Live Preview</h1>
-        <p>Simulating 800×480 1-bit monochrome e-ink screen</p>
-    </div>
-    <div class="device-bezel">
-        <div class="screen-container">
-            <img id="trmnl-img" src="/api/trmnl/display/current.png" alt="TRMNL OG Display">
-        </div>
-    </div>
-    <div class="controls">
-        <button class="btn" onclick="refreshImage()">↻ Refresh Screen</button>
-        <a class="btn btn-secondary" href="/api/trmnl/display" target="_blank">View /api/trmnl/display JSON</a>
-        <a class="btn btn-secondary" href="/api/trmnl/setup" target="_blank">View /api/trmnl/setup JSON</a>
-        <a class="btn btn-secondary" href="/api/trmnl/display/current.png" target="_blank">Open Raw PNG</a>
-        <a class="btn btn-secondary" href="/" target="_blank">Dashboard Home</a>
-    </div>
-    <script>
-        function refreshImage() {
-            const img = document.getElementById('trmnl-img');
-            img.src = '/api/trmnl/display/current.png?t=' + Date.now();
-        }
-    </script>
-</body>
-</html>"""
-    return render_template_string(html)
+    return render_template('trmnl.html')
 
 
 
