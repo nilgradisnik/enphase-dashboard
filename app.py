@@ -170,7 +170,7 @@ def refresh_history_api():
         return jsonify({"error": str(e)}), 500
 
 # TRMNL e-ink display API routes
-@app.route('/api/setup', methods=['GET'])
+@app.route('/api/trmnl/setup', methods=['GET'])
 def trmnl_setup_api():
     config = load_config()
     trmnl_cfg = config.get('trmnl', {})
@@ -180,12 +180,12 @@ def trmnl_setup_api():
         "status": 200,
         "api_key": api_key,
         "friendly_id": "TRMNL-SOLAR",
-        "image_url": f"{base_url}/api/display/current.png",
+        "image_url": f"{base_url}/api/trmnl/display/current.png",
         "filename": "solar.png",
         "message": "TRMNL connected to Enphase solar dashboard"
     })
 
-@app.route('/api/display', methods=['GET'])
+@app.route('/api/trmnl/display', methods=['GET'])
 def trmnl_display_api():
     config = load_config()
     trmnl_cfg = config.get('trmnl', {})
@@ -197,7 +197,7 @@ def trmnl_display_api():
 
     return jsonify({
         "status": 0,
-        "image_url": f"{base_url}/api/display/current.png",
+        "image_url": f"{base_url}/api/trmnl/display/current.png",
         "filename": "solar.png",
         "refresh_rate": refresh_rate,
         "reset_firmware": False,
@@ -207,7 +207,7 @@ def trmnl_display_api():
         "image_rotate": 1
     })
 
-@app.route('/api/display/current.png', methods=['GET'])
+@app.route('/api/trmnl/display/current.png', methods=['GET'])
 def trmnl_current_png():
     if not os.path.exists(OUTPUT_IMAGE_PATH):
         update_trmnl_display(app)
@@ -217,7 +217,7 @@ def trmnl_current_png():
     response.headers['Expires'] = '0'
     return response
 
-@app.route('/api/display/current.bmp', methods=['GET'])
+@app.route('/api/trmnl/display/current.bmp', methods=['GET'])
 def trmnl_current_bmp():
     if not os.path.exists(OUTPUT_BMP_PATH):
         update_trmnl_display(app)
@@ -227,10 +227,12 @@ def trmnl_current_bmp():
     response.headers['Expires'] = '0'
     return response
 
-@app.route('/api/log', methods=['POST'])
+@app.route('/api/trmnl/log', methods=['POST'])
 def trmnl_log_api():
     return jsonify({"status": 200})
 
+
+@app.route('/api/trmnl', methods=['GET'])
 @app.route('/trmnl', methods=['GET'])
 def trmnl_preview_page():
     html = """<!DOCTYPE html>
@@ -324,25 +326,26 @@ def trmnl_preview_page():
     </div>
     <div class="device-bezel">
         <div class="screen-container">
-            <img id="trmnl-img" src="/api/display/current.png" alt="TRMNL OG Display">
+            <img id="trmnl-img" src="/api/trmnl/display/current.png" alt="TRMNL OG Display">
         </div>
     </div>
     <div class="controls">
         <button class="btn" onclick="refreshImage()">↻ Refresh Screen</button>
-        <a class="btn btn-secondary" href="/api/display" target="_blank">View /api/display JSON</a>
-        <a class="btn btn-secondary" href="/api/setup" target="_blank">View /api/setup JSON</a>
-        <a class="btn btn-secondary" href="/api/display/current.png" target="_blank">Open Raw PNG</a>
+        <a class="btn btn-secondary" href="/api/trmnl/display" target="_blank">View /api/trmnl/display JSON</a>
+        <a class="btn btn-secondary" href="/api/trmnl/setup" target="_blank">View /api/trmnl/setup JSON</a>
+        <a class="btn btn-secondary" href="/api/trmnl/display/current.png" target="_blank">Open Raw PNG</a>
         <a class="btn btn-secondary" href="/" target="_blank">Dashboard Home</a>
     </div>
     <script>
         function refreshImage() {
             const img = document.getElementById('trmnl-img');
-            img.src = '/api/display/current.png?t=' + Date.now();
+            img.src = '/api/trmnl/display/current.png?t=' + Date.now();
         }
     </script>
 </body>
 </html>"""
     return render_template_string(html)
+
 
 
 # Scheduled job definitions
