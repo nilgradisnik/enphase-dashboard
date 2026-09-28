@@ -72,8 +72,9 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
     # Load custom fonts
     font_blockkie_title = ImageFont.truetype(os.path.join(FONTS_DIR, "BlockKie.ttf"), 36)
     font_blockkie_num = ImageFont.truetype(os.path.join(FONTS_DIR, "BlockKie.ttf"), 58)
-    font_geneva_label = ImageFont.truetype(os.path.join(FONTS_DIR, "geneva-9.ttf"), 22)
-    font_geneva_unit = ImageFont.truetype(os.path.join(FONTS_DIR, "geneva-9.ttf"), 26)
+    font_box_label = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 20)
+    font_unit = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 28)
+    font_unit_long = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 21)
     font_geneva_footer = ImageFont.truetype(os.path.join(FONTS_DIR, "geneva-9.ttf"), 14)
     font_inter_time = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 15)
 
@@ -110,12 +111,12 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
     row_h = (grid_h - (gap_y * (rows - 1))) // rows
 
     stats = [
-        {"label": "TODAY'S SOLAR", "num": f"{data.get('production', 0.0):.1f}", "unit": "kWh", "highlight": True, "inverted": False},
-        {"label": "TODAY'S USAGE", "num": f"{data.get('consumption', 0.0):.1f}", "unit": "kWh", "highlight": False, "inverted": False},
-        {"label": "TODAY'S NET GRID", "num": data.get("net_grid_str", "+0.0"), "unit": data.get("net_grid_unit", "kWh Export"), "highlight": True, "inverted": data.get("is_export", True)},
-        {"label": "TODAY'S EXPORT", "num": f"{data.get('export', 0.0):.1f}", "unit": "kWh", "highlight": False, "inverted": False},
-        {"label": "TODAY'S IMPORT", "num": f"{data.get('import', 0.0):.1f}", "unit": "kWh", "highlight": False, "inverted": False},
-        {"label": "SOLAR COVERAGE", "num": f"{data.get('coverage', 0.0):.0f}", "unit": "%", "highlight": False, "inverted": False},
+        {"label": "TODAY'S SOLAR", "num": f"{data.get('production', 0.0):.1f}", "unit": "kWh"},
+        {"label": "TODAY'S USAGE", "num": f"{data.get('consumption', 0.0):.1f}", "unit": "kWh"},
+        {"label": "TODAY'S NET GRID", "num": data.get("net_grid_str", "+0.0"), "unit": data.get("net_grid_unit", "kWh Export")},
+        {"label": "TODAY'S EXPORT", "num": f"{data.get('export', 0.0):.1f}", "unit": "kWh"},
+        {"label": "TODAY'S IMPORT", "num": f"{data.get('import', 0.0):.1f}", "unit": "kWh"},
+        {"label": "SOLAR COVERAGE", "num": f"{data.get('coverage', 0.0):.0f}", "unit": "%"},
     ]
 
     for idx, stat in enumerate(stats):
@@ -126,22 +127,11 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
         bx2 = bx + col_w
         by2 = by + row_h
 
-        # Inverted card (Net Grid Export)
-        if stat["inverted"]:
-            draw.rounded_rectangle([bx, by, bx2, by2], radius=10, fill=0, outline=0, width=2)
-            text_color = 255
-            label_color = 230
-        elif stat["highlight"]:
-            draw.rounded_rectangle([bx, by, bx2, by2], radius=10, fill=240, outline=0, width=2)
-            text_color = 0
-            label_color = 50
-        else:
-            draw.rounded_rectangle([bx, by, bx2, by2], radius=10, fill=255, outline=0, width=2)
-            text_color = 0
-            label_color = 60
+        # Clean white card background with black border for all boxes
+        draw.rounded_rectangle([bx, by, bx2, by2], radius=10, fill=255, outline=0, width=2)
 
-        # Label
-        draw.text((bx + 14, by + 14), stat["label"], fill=label_color, font=font_geneva_label)
+        # Top-left text inside box
+        draw.text((bx + 14, by + 14), stat["label"], fill=0, font=font_box_label)
 
         # Value + Unit
         num_str = stat["num"]
@@ -151,10 +141,14 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
         num_w = num_bbox[2] - num_bbox[0]
 
         num_y = by2 - 68
-        draw.text((bx + 14, num_y), num_str, fill=text_color, font=font_blockkie_num)
+        draw.text((bx + 14, num_y), num_str, fill=0, font=font_blockkie_num)
 
         if unit_str:
-            draw.text((bx + 14 + num_w + 6, num_y + 24), unit_str, fill=text_color, font=font_geneva_unit)
+            u_font = font_unit_long if len(unit_str) > 5 else font_unit
+            u_bbox = draw.textbbox((0, 0), unit_str, font=u_font)
+            u_h = u_bbox[3] - u_bbox[1]
+            draw.text((bx + 14 + num_w + 8, by2 - 20 - u_h), unit_str, fill=0, font=u_font)
+
 
 
     # 3. Footer Bar
