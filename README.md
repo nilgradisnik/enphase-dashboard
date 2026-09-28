@@ -147,11 +147,11 @@ The screen layout is custom-designed for the **800×480 monochrome** e-ink displ
 - **Footer**: System status bar showing active integration.
 
 ### TRMNL Device Endpoints
-- `GET /api/trmnl/setup`: Returns device handshake and configuration instructions.
-- `GET /api/trmnl/display`: Polled by TRMNL; returns rotation (`1`), sleep duration, and image URL.
-- `GET /api/trmnl/display/current.png` & `GET /api/trmnl/display/current.bmp`: Serves the rendered 1-bit monochrome image.
-- `POST /api/trmnl/log`: Ingests and acknowledges device telemetry logs.
-- `GET /api/trmnl`: Interactive in-browser display preview simulating the physical TRMNL OG device.
+- `GET /api/setup`: Returns device handshake and configuration instructions.
+- `GET /api/display`: Polled by TRMNL; returns rotation (`1`), sleep duration, and image URL.
+- `GET /api/display/current.png` & `GET /api/display/current.bmp`: Serves the rendered 1-bit monochrome image.
+- `POST /api/log`: Ingests and acknowledges device telemetry logs.
+- `GET /trmnl`: Interactive in-browser display preview simulating the physical TRMNL OG device.
 
 ### Setting Up Your TRMNL Device
 1. Put your TRMNL OG device into **Setup Mode** (double-click the physical button).

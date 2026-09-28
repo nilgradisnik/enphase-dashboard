@@ -174,11 +174,7 @@ def get_request_base_url():
     return f"{scheme}://{host}".rstrip('/')
 
 # TRMNL e-ink display API routes
-# Supports both standard TRMNL firmware base URLs (/api/setup, /api/display)
-# and prefixed custom server paths (/api/trmnl/...)
 @app.route('/api/setup', methods=['GET'])
-@app.route('/api/trmnl/setup', methods=['GET'])
-@app.route('/api/trmnl/api/setup', methods=['GET'])
 def trmnl_setup_api():
     config = load_config()
     trmnl_cfg = config.get('trmnl', {})
@@ -188,14 +184,12 @@ def trmnl_setup_api():
         "status": 200,
         "api_key": api_key,
         "friendly_id": "TRMNL-SOLAR",
-        "image_url": f"{base_url}/api/trmnl/display/current.png",
+        "image_url": f"{base_url}/api/display/current.png",
         "filename": "solar.png",
         "message": "TRMNL connected to Enphase solar dashboard"
     })
 
 @app.route('/api/display', methods=['GET'])
-@app.route('/api/trmnl/display', methods=['GET'])
-@app.route('/api/trmnl/api/display', methods=['GET'])
 def trmnl_display_api():
     config = load_config()
     trmnl_cfg = config.get('trmnl', {})
@@ -207,7 +201,7 @@ def trmnl_display_api():
 
     return jsonify({
         "status": 0,
-        "image_url": f"{base_url}/api/trmnl/display/current.png",
+        "image_url": f"{base_url}/api/display/current.png",
         "filename": "solar.png",
         "refresh_rate": refresh_rate,
         "reset_firmware": False,
@@ -218,7 +212,6 @@ def trmnl_display_api():
     })
 
 @app.route('/api/display/current.png', methods=['GET'])
-@app.route('/api/trmnl/display/current.png', methods=['GET'])
 def trmnl_current_png():
     if not os.path.exists(OUTPUT_IMAGE_PATH):
         update_trmnl_display(app)
@@ -229,7 +222,6 @@ def trmnl_current_png():
     return response
 
 @app.route('/api/display/current.bmp', methods=['GET'])
-@app.route('/api/trmnl/display/current.bmp', methods=['GET'])
 def trmnl_current_bmp():
     if not os.path.exists(OUTPUT_BMP_PATH):
         update_trmnl_display(app)
@@ -240,13 +232,10 @@ def trmnl_current_bmp():
     return response
 
 @app.route('/api/log', methods=['POST'])
-@app.route('/api/trmnl/log', methods=['POST'])
-@app.route('/api/trmnl/api/log', methods=['POST'])
 def trmnl_log_api():
     return jsonify({"status": 200})
 
 
-@app.route('/api/trmnl', methods=['GET'])
 @app.route('/trmnl', methods=['GET'])
 def trmnl_preview_page():
     return render_template('trmnl.html')
