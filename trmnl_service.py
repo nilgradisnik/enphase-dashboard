@@ -76,7 +76,7 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
     font_unit = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 28)
     font_unit_long = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 21)
     font_geneva_footer = ImageFont.truetype(os.path.join(FONTS_DIR, "geneva-9.ttf"), 14)
-    font_inter_time = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 15)
+    font_inter_time = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 20)
 
     pad = 24
 
@@ -93,7 +93,9 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
     time_str = data.get("last_updated", "")
     time_bbox = draw.textbbox((0, 0), time_str, font=font_inter_time)
     time_w = time_bbox[2] - time_bbox[0]
-    draw.text((WIDTH - pad - time_w, pad + 6), time_str, fill=80, font=font_inter_time)
+    time_h = time_bbox[3] - time_bbox[1]
+    time_y = pad + (36 - time_h) // 2
+    draw.text((WIDTH - pad - time_w, time_y), time_str, fill=0, font=font_inter_time)
 
     # Header divider line (4px black line)
     header_line_y = pad + 40
@@ -145,9 +147,9 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
 
         if unit_str:
             u_font = font_unit_long if len(unit_str) > 5 else font_unit
-            u_bbox = draw.textbbox((0, 0), unit_str, font=u_font)
-            u_h = u_bbox[3] - u_bbox[1]
-            draw.text((bx + 14 + num_w + 8, by2 - 20 - u_h), unit_str, fill=0, font=u_font)
+            unit_baseline_offset = 21 if len(unit_str) > 5 else 28
+            unit_y = (num_y + 52) - unit_baseline_offset
+            draw.text((bx + 14 + num_w + 8, unit_y), unit_str, fill=0, font=u_font)
 
 
 
