@@ -168,13 +168,22 @@ def refresh_history_api():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+def get_request_base_url():
+    scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
+    host = request.headers.get('X-Forwarded-Host', request.host)
+    return f"{scheme}://{host}".rstrip('/')
+
 # TRMNL e-ink display API routes
+# Supports both standard TRMNL firmware base URLs (/api/setup, /api/display)
+# and prefixed custom server paths (/api/trmnl/...)
+@app.route('/api/setup', methods=['GET'])
 @app.route('/api/trmnl/setup', methods=['GET'])
+@app.route('/api/trmnl/api/setup', methods=['GET'])
 def trmnl_setup_api():
     config = load_config()
     trmnl_cfg = config.get('trmnl', {})
     api_key = trmnl_cfg.get('api_key', 'local-trmnl-token')
-    base_url = request.host_url.rstrip('/')
+    base_url = get_request_base_url()
     return jsonify({
         "status": 200,
         "api_key": api_key,
@@ -184,12 +193,14 @@ def trmnl_setup_api():
         "message": "TRMNL connected to Enphase solar dashboard"
     })
 
+@app.route('/api/display', methods=['GET'])
 @app.route('/api/trmnl/display', methods=['GET'])
+@app.route('/api/trmnl/api/display', methods=['GET'])
 def trmnl_display_api():
     config = load_config()
     trmnl_cfg = config.get('trmnl', {})
     refresh_rate = int(trmnl_cfg.get('refresh_rate_seconds', 600))
-    base_url = request.host_url.rstrip('/')
+    base_url = get_request_base_url()
 
     if not os.path.exists(OUTPUT_IMAGE_PATH):
         update_trmnl_display(app)
@@ -206,6 +217,7 @@ def trmnl_display_api():
         "image_rotate": 1
     })
 
+@app.route('/api/display/current.png', methods=['GET'])
 @app.route('/api/trmnl/display/current.png', methods=['GET'])
 def trmnl_current_png():
     if not os.path.exists(OUTPUT_IMAGE_PATH):
@@ -216,6 +228,7 @@ def trmnl_current_png():
     response.headers['Expires'] = '0'
     return response
 
+@app.route('/api/display/current.bmp', methods=['GET'])
 @app.route('/api/trmnl/display/current.bmp', methods=['GET'])
 def trmnl_current_bmp():
     if not os.path.exists(OUTPUT_BMP_PATH):
@@ -226,7 +239,9 @@ def trmnl_current_bmp():
     response.headers['Expires'] = '0'
     return response
 
+@app.route('/api/log', methods=['POST'])
 @app.route('/api/trmnl/log', methods=['POST'])
+@app.route('/api/trmnl/api/log', methods=['POST'])
 def trmnl_log_api():
     return jsonify({"status": 200})
 

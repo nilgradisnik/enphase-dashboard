@@ -155,11 +155,14 @@ The screen layout is custom-designed for the **800×480 monochrome** e-ink displ
 
 ### Setting Up Your TRMNL Device
 1. Put your TRMNL OG device into **Setup Mode** (double-click the physical button).
-2. Connect to the device's Wi-Fi hotspot and navigate to `http://192.168.4.1`.
-3. In the Wi-Fi setup page, configure:
-   - **Custom API Host**: `http://<YOUR_SERVER_IP>:5000/api/trmnl`
-   - **API Key**: The `api_key` defined in your `config.yml` (default: `local-trmnl-token`)
-4. Save and reboot. The display will pull its initial screen and refresh on your configured interval (default: 10 minutes).
+2. Connect to the device's Wi-Fi hotspot (`TRMNL-...`) and navigate to `http://192.168.4.1`.
+3. In the Wi-Fi setup captive portal:
+   - Navigate to **Advanced** > **Custom Server**.
+   - Enable Custom Server and set the URL to your base host without a trailing slash:
+     - If using a domain: `https://solar.nil.earth`
+     - If using local IP: `http://<YOUR_SERVER_IP>:5000`
+   - Set **API Key** to the `api_key` configured in your `config.yml` (default: `local-trmnl-token`).
+4. Save and reboot. The TRMNL firmware will automatically contact `/api/setup` and poll `/api/display` to render your solar status screen!
 
 
 ---
