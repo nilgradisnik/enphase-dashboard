@@ -117,11 +117,11 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
     row_h = (grid_h - (gap_y * (rows - 1))) // rows
 
     stats = [
-        {"label": "TODAY'S SOLAR", "num": f"{data.get('production', 0.0):.1f}", "unit": "kWh"},
-        {"label": "TODAY'S USAGE", "num": f"{data.get('consumption', 0.0):.1f}", "unit": "kWh"},
-        {"label": "TODAY'S NET GRID", "num": data.get("net_grid_str", "+0.0"), "unit": data.get("net_grid_unit", "kWh Export")},
-        {"label": "TODAY'S EXPORT", "num": f"{data.get('export', 0.0):.1f}", "unit": "kWh"},
-        {"label": "TODAY'S IMPORT", "num": f"{data.get('import', 0.0):.1f}", "unit": "kWh"},
+        {"label": "SOLAR", "num": f"{data.get('production', 0.0):.1f}", "unit": "kWh"},
+        {"label": "USAGE", "num": f"{data.get('consumption', 0.0):.1f}", "unit": "kWh"},
+        {"label": "NET GRID", "num": data.get("net_grid_str", "+0.0"), "unit": data.get("net_grid_unit", "kWh Export")},
+        {"label": "EXPORT", "num": f"{data.get('export', 0.0):.1f}", "unit": "kWh"},
+        {"label": "IMPORT", "num": f"{data.get('import', 0.0):.1f}", "unit": "kWh"},
         {"label": "SOLAR COVERAGE", "num": f"{data.get('coverage', 0.0):.0f}", "unit": "%"},
     ]
 
@@ -171,7 +171,7 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
     footer_y = HEIGHT - pad - bar_h
     draw.rounded_rectangle([pad, footer_y, WIDTH - pad, footer_y + bar_h], radius=6, fill=0)
 
-    footer_text = "ENPHASE DASHBOARD HISTORY INTEGRATION"
+    footer_text = "Enphase Dashboard"
     f_bbox = draw.textbbox((0, 0), footer_text, font=font_footer)
     f_h = f_bbox[3] - f_bbox[1]
     f_y = footer_y + (bar_h - f_h) // 2 - f_bbox[1]
