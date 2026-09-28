@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRMNL OG Display Preview</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='trmnl.css') }}">
+</head>
+<body>
+    <div class="header">
+        <h1>TRMNL OG Live Preview</h1>
+        <p>Simulating 800×480 1-bit monochrome e-ink screen</p>
+    </div>
+    <div class="device-bezel">
+        <div class="screen-container">
+            <img id="trmnl-img" src="{{ url_for('trmnl_current_png') }}" alt="TRMNL OG Display">
+        </div>
+    </div>
+    <div class="controls">
+        <button class="btn" onclick="refreshImage()">↻ Refresh Screen</button>
+        <a class="btn btn-secondary" href="{{ url_for('trmnl_display_api') }}" target="_blank">View /api/display JSON</a>
+        <a class="btn btn-secondary" href="{{ url_for('trmnl_setup_api') }}" target="_blank">View /api/setup JSON</a>
+        <a class="btn btn-secondary" href="{{ url_for('trmnl_current_png') }}" target="_blank">Open Raw PNG</a>
+        <a class="btn btn-secondary" href="{{ url_for('index') }}" target="_blank">Dashboard Home</a>
+    </div>
+    <script>
+        function refreshImage() {
+            const img = document.getElementById('trmnl-img');
+            img.src = "{{ url_for('trmnl_current_png') }}?t=" + Date.now();
+        }
+    </script>
+</body>
+</html>

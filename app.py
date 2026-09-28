@@ -2,11 +2,12 @@ import sys
 import os
 import json
 import yaml
-from datetime import datetime
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, send_file, request, make_response
 from flask_apscheduler import APScheduler
 from enphase_api.local.gateway import Gateway
 from db import db, MeterReading, DailyStats
+from trmnl_service import update_trmnl_display, OUTPUT_IMAGE_PATH, OUTPUT_BMP_PATH
+
 
 app = Flask(__name__)
 
@@ -167,11 +168,95 @@ def refresh_history_api():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+def get_request_base_url():
+    scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
+    host = request.headers.get('X-Forwarded-Host', request.host)
+    return f"{scheme}://{host}".rstrip('/')
+
+# TRMNL e-ink display API routes
+@app.route('/api/setup', methods=['GET'])
+def trmnl_setup_api():
+    config = load_config()
+    trmnl_cfg = config.get('trmnl', {})
+    api_key = trmnl_cfg.get('api_key', 'local-trmnl-token')
+    base_url = get_request_base_url()
+    return jsonify({
+        "status": 200,
+        "api_key": api_key,
+        "friendly_id": "TRMNL-SOLAR",
+        "image_url": f"{base_url}/api/display/current.png",
+        "filename": "solar.png",
+        "message": "TRMNL connected to Enphase solar dashboard"
+    })
+
+@app.route('/api/display', methods=['GET'])
+def trmnl_display_api():
+    config = load_config()
+    trmnl_cfg = config.get('trmnl', {})
+    refresh_rate = int(trmnl_cfg.get('refresh_rate_seconds', 600))
+    base_url = get_request_base_url()
+
+    if not os.path.exists(OUTPUT_IMAGE_PATH):
+        update_trmnl_display(app)
+
+    return jsonify({
+        "status": 0,
+        "image_url": f"{base_url}/api/display/current.png",
+        "filename": "solar.png",
+        "refresh_rate": refresh_rate,
+        "reset_firmware": False,
+        "update_firmware": False,
+        "firmware_url": None,
+        "special_function": None,
+        "image_rotate": 1
+    })
+
+@app.route('/api/display/current.png', methods=['GET'])
+def trmnl_current_png():
+    if not os.path.exists(OUTPUT_IMAGE_PATH):
+        update_trmnl_display(app)
+    response = make_response(send_file(OUTPUT_IMAGE_PATH, mimetype='image/png'))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+@app.route('/api/display/current.bmp', methods=['GET'])
+def trmnl_current_bmp():
+    if not os.path.exists(OUTPUT_BMP_PATH):
+        update_trmnl_display(app)
+    response = make_response(send_file(OUTPUT_BMP_PATH, mimetype='image/bmp'))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+@app.route('/api/log', methods=['POST'])
+def trmnl_log_api():
+    return jsonify({"status": 200})
+
+
+@app.route('/trmnl', methods=['GET'])
+def trmnl_preview_page():
+    return render_template('trmnl.html')
+
+
+
 # Scheduled job definitions
 @scheduler.task('interval', id='record_readings_job', minutes=15)
 def scheduled_fetch():
     from dashboard_services import record_reading
     record_reading(app)
+
+# TRMNL render scheduled job
+config_init = load_config()
+trmnl_interval = int(config_init.get('trmnl', {}).get('render_interval_minutes', 10))
+
+@scheduler.task('interval', id='render_trmnl_job', minutes=trmnl_interval)
+def scheduled_trmnl():
+    cfg = load_config()
+    if cfg.get('trmnl', {}).get('enabled', True):
+        update_trmnl_display(app)
 
 # Create tables and start scheduler
 with app.app_context():
@@ -185,6 +270,14 @@ with app.app_context():
     except Exception as e:
         print(f"Failed to perform initial fetch: {e}")
 
+    # Generate initial TRMNL screen
+    try:
+        cfg = load_config()
+        if cfg.get('trmnl', {}).get('enabled', True):
+            update_trmnl_display(app)
+    except Exception as e:
+        print(f"Failed to perform initial TRMNL render: {e}")
+
 if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     scheduler.start()
     print("Background data collection scheduler started.")
@@ -192,4 +285,5 @@ if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
 if __name__ == '__main__':
     print(f"Starting dashboard.")
     app.run(debug=True, host='0.0.0.0', port=5000)
+
 
