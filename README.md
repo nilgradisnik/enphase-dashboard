@@ -15,43 +15,45 @@ Bypasses cloud latency and rate limits to deliver sub-second telemetry, resilien
 - **Automated Gap Interpolation**: Detects server downtime outages (>2 hours), distributes the true accumulated delta proportionally across missed days, and marks them with an "Estimated" badge.
 - **Split-Phase & Inverter Health**: Monitors Phase A/B voltages, currents, and power factors, alongside individual microinverter operating statuses and serial numbers.
 - **Zero-Build Lightweight UI**: Built using [Alpine.js](https://alpinejs.dev/) and [Chart.js](https://www.chartjs.org/) served via Flask—no Node, React, or npm build pipelines required.
+- **Native TRMNL E-Ink Display (BYOS)**: Directly serves [TRMNL OG](https://usetrmnl.com) devices via the native TRMNL BYOS protocol. Renders an 800×480 1-bit monochrome "Daily Solar Status" card layout on a configurable cadence (e.g. 10 min) with zero external cloud or headless browser dependencies.
 
 ---
 
 ## Architecture Overview
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                     Local Home Network                      │
-│                                                             │
-│   ┌───────────────────────┐                                 │
-│   │   Enphase IQ Gateway  │                                 │
-│   │  (Envoy on Local LAN) │                                 │
-│   └──────────┬────────────┘                                 │
-│              │ HTTPS / Local JWT Auth                       │
-│              ▼                                              │
-│   ┌─────────────────────────────────────────────────────┐   │
-│   │               Flask Backend Service                 │   │
-│   │                                                     │   │
-│   │   ┌───────────────────┐     ┌───────────────────┐   │   │
-│   │   │  APScheduler Task │     │   Flask Web API   │   │   │
-│   │   │  (15-min Polling) │     │  (REST Endpoints) │   │   │
-│   │   └─────────┬─────────┘     └─────────▲─────────┘   │   │
-│   │             │                         │             │   │
-│   │             ▼                         │             │   │
-│   │   ┌───────────────────────────────────┴─────────┐   │   │
-│   │   │   Database (PostgreSQL / SQLite via ORM)    │   │   │
-│   │   │     - meter_readings (Raw 15-min counters)  │   │   │
-│   │   │     - daily_stats (Aggregated totals)       │   │   │
-│   │   └─────────────────────────────────────────────┘   │   │
-│   └───────────────────────────┬─────────────────────────┘   │
-│                               │ JSON Over HTTP              │
-│                               ▼                             │
-│   ┌─────────────────────────────────────────────────────┐   │
-│   │           Browser Dashboard (Client-Side)           │   │
-│   │   Alpine.js (Reactive State) + Chart.js (Trends)    │   │
-│   └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           Local Home Network                            │
+│                                                                         │
+│   ┌───────────────────────┐                                             │
+│   │   Enphase IQ Gateway  │                                             │
+│   │  (Envoy on Local LAN) │                                             │
+│   └──────────┬────────────┘                                             │
+│              │ HTTPS / Local JWT Auth                                   │
+│              ▼                                                          │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │                     Flask Backend Service                       │   │
+│   │                                                                 │   │
+│   │   ┌───────────────────┐     ┌───────────────────────────────┐   │   │
+│   │   │  APScheduler Task │     │         Flask Web API         │   │   │
+│   │   │  (15-min Polling) │     │  - REST Endpoints             │   │   │
+│   │   │  (10-min TRMNL)   │     │  - TRMNL BYOS (/api/display)  │   │   │
+│   │   └─────────┬─────────┘     └───────────────▲───────────────┘   │   │
+│   │             │                               │                   │   │
+│   │             ▼                               │                   │   │
+│   │   ┌─────────────────────────────────────────┴───────────────┐   │   │
+│   │   │          Database (PostgreSQL / SQLite via ORM)         │   │   │
+│   │   │            - meter_readings (Raw 15-min counters)       │   │   │
+│   │   │            - daily_stats (Aggregated totals)            │   │   │
+│   │   └─────────────────────────────────────────────────────────┘   │   │
+│   └───────────────────────────┬───────────────────┬─────────────────┘   │
+│                               │ JSON Over HTTP    │ 1-bit BMP / PNG     │
+│                               ▼                   ▼                     │
+│   ┌─────────────────────────────────────────┐   ┌───────────────────┐   │
+│   │     Browser Dashboard (Client-Side)     │   │  TRMNL OG Device  │   │
+│   │  Alpine.js (Reactive) + Chart.js (Live) │   │ (800x480 E-Paper) │   │
+│   └─────────────────────────────────────────┘   └───────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -71,7 +73,16 @@ Bypasses cloud latency and rate limits to deliver sub-second telemetry, resilien
    use_https: true                 # Default: true for D7+ firmware
    gateway_token: "YOUR_TOKEN"     # Your Enphase Entrez / Enlighten bearer token
    timezone: "America/New_York"    # Local timezone for daily solar boundary calculations
+
+   # TRMNL e-ink display configuration
+   trmnl:
+     enabled: true
+     refresh_rate_seconds: 600       # How often the TRMNL device wakes up to pull a new screen (e.g. 600 = 10 min)
+     render_interval_minutes: 10    # How often the background job re-renders the image
+     api_key: "local-trmnl-token"   # Optional device API key / access token
+     title: "DAILY SOLAR STATUS"    # Screen title
    ```
+
 
 3. *(Optional)* Copy and customize your system specs:
    ```bash
@@ -116,6 +127,38 @@ python app.py
 ```
 
 By default, the local app will use a file-backed SQLite database at `instance/enphase.db`.
+
+---
+
+## TRMNL E-Ink Display Integration (BYOS)
+
+The dashboard includes native **Bring Your Own Server (BYOS)** support for [TRMNL](https://usetrmnl.com) OG e-paper displays, eliminating any need for intermediary servers (like `byos_next` or `terminus`), external cloud services, or heavy headless browsers.
+
+### Display Overview
+The screen layout is custom-designed for the **800×480 monochrome** e-ink display and features:
+- **Header**: Status dot, screen title, and localized "last updated" timestamp.
+- **6-Card Live Metric Grid**:
+  1. **Today's Solar**: Total production ($kWh$).
+  2. **Today's Usage**: Total household consumption ($kWh$).
+  3. **Today's Net Grid**: Net energy flow ($kWh$). Dynamically inverts to solid black with white text when exporting solar power to the grid.
+  4. **Today's Export**: Energy exported to the grid ($kWh$).
+  5. **Today's Import**: Energy imported from the grid ($kWh$).
+  6. **Solar Coverage**: Percentage of household energy covered directly by solar generation.
+- **Footer**: System status bar showing active integration.
+
+### TRMNL Device Endpoints
+- `GET /api/setup`: Returns device handshake and configuration instructions.
+- `GET /api/display`: Polled by TRMNL; returns rotation (`1`), sleep duration, and image URL.
+- `GET /api/display/current.png` & `GET /api/display/current.bmp`: Serves the rendered 1-bit monochrome image.
+- `POST /api/log`: Ingests and acknowledges device telemetry logs.
+
+### Setting Up Your TRMNL Device
+1. Put your TRMNL OG device into **Setup Mode** (double-click the physical button).
+2. Connect to the device's Wi-Fi hotspot and navigate to `http://192.168.4.1`.
+3. In the Wi-Fi setup page, configure:
+   - **Custom API Host**: `http://<YOUR_SERVER_IP>:5000`
+   - **API Key**: The `api_key` defined in your `config.yml` (default: `local-trmnl-token`)
+4. Save and reboot. The display will pull its initial screen and refresh on your configured interval (default: 10 minutes).
 
 ---
 

@@ -93,6 +93,13 @@ def record_reading(app):
                 # First reading: aggregate today in target timezone
                 aggregate_day(local_date)
                 
+            # Update TRMNL screen if enabled
+            try:
+                from trmnl_service import update_trmnl_display
+                update_trmnl_display(app)
+            except Exception as trmnl_err:
+                print(f"TRMNL update failed: {trmnl_err}")
+                
         except Exception as e:
             db.session.rollback()
             print(f"Error in record_reading: {e}")

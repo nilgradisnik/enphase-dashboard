@@ -13,3 +13,8 @@ configuration/system.yml
 
 # OS files
 .DS_Store
+
+# Generated images
+static/trmnl_display.*
+
+

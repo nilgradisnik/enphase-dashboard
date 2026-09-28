@@ -3,3 +3,12 @@ use_https: true
 gateway_token: "YOUR_BEARER_TOKEN_HERE"
 timezone: "America/New_York"
 
+# TRMNL e-ink display configuration
+trmnl:
+  enabled: true
+  refresh_rate_seconds: 600       # How often the TRMNL device wakes up to pull a new screen (in seconds, e.g. 600 = 10 min)
+  render_interval_minutes: 10    # How often the background job re-renders the image
+  api_key: "local-trmnl-token"   # Optional device API key / access token
+  title: "DAILY SOLAR STATUS"    # Screen title
+
+
