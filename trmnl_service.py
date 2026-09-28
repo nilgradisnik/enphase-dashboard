@@ -171,7 +171,7 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
     footer_y = HEIGHT - pad - bar_h
     draw.rounded_rectangle([pad, footer_y, WIDTH - pad, footer_y + bar_h], radius=6, fill=0)
 
-    footer_text = "Enphase Dashboard"
+    footer_text = "ENPHASE DASHBOARD"
     f_bbox = draw.textbbox((0, 0), footer_text, font=font_footer)
     f_h = f_bbox[3] - f_bbox[1]
     f_y = footer_y + (bar_h - f_h) // 2 - f_bbox[1]
