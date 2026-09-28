@@ -71,9 +71,9 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
 
     # Load custom fonts
     font_blockkie_title = ImageFont.truetype(os.path.join(FONTS_DIR, "BlockKie.ttf"), 36)
-    font_blockkie_num = ImageFont.truetype(os.path.join(FONTS_DIR, "BlockKie.ttf"), 46)
-    font_geneva_label = ImageFont.truetype(os.path.join(FONTS_DIR, "geneva-9.ttf"), 18)
-    font_geneva_unit = ImageFont.truetype(os.path.join(FONTS_DIR, "geneva-9.ttf"), 22)
+    font_blockkie_num = ImageFont.truetype(os.path.join(FONTS_DIR, "BlockKie.ttf"), 58)
+    font_geneva_label = ImageFont.truetype(os.path.join(FONTS_DIR, "geneva-9.ttf"), 22)
+    font_geneva_unit = ImageFont.truetype(os.path.join(FONTS_DIR, "geneva-9.ttf"), 26)
     font_geneva_footer = ImageFont.truetype(os.path.join(FONTS_DIR, "geneva-9.ttf"), 14)
     font_inter_time = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 15)
 
@@ -141,7 +141,7 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
             label_color = 60
 
         # Label
-        draw.text((bx + 14, by + 12), stat["label"], fill=label_color, font=font_geneva_label)
+        draw.text((bx + 14, by + 14), stat["label"], fill=label_color, font=font_geneva_label)
 
         # Value + Unit
         num_str = stat["num"]
@@ -150,11 +150,12 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
         num_bbox = draw.textbbox((0, 0), num_str, font=font_blockkie_num)
         num_w = num_bbox[2] - num_bbox[0]
 
-        num_y = by2 - 58
+        num_y = by2 - 68
         draw.text((bx + 14, num_y), num_str, fill=text_color, font=font_blockkie_num)
 
         if unit_str:
-            draw.text((bx + 14 + num_w + 6, num_y + 18), unit_str, fill=text_color, font=font_geneva_unit)
+            draw.text((bx + 14 + num_w + 6, num_y + 24), unit_str, fill=text_color, font=font_geneva_unit)
+
 
     # 3. Footer Bar
     footer_y = HEIGHT - pad - 26
