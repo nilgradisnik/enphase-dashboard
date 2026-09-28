@@ -75,7 +75,7 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
     font_box_label = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 20)
     font_unit = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 28)
     font_unit_long = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 21)
-    font_geneva_footer = ImageFont.truetype(os.path.join(FONTS_DIR, "geneva-9.ttf"), 14)
+    font_footer = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 17)
     font_inter_time = ImageFont.truetype(os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf"), 20)
 
     pad = 24
@@ -154,17 +154,29 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
 
 
     # 3. Footer Bar
-    footer_y = HEIGHT - pad - 26
-    draw.rounded_rectangle([pad, footer_y, WIDTH - pad, footer_y + 28], radius=6, fill=0)
-    draw.text((pad + 12, footer_y + 7), "ENPHASE DASHBOARD HISTORY INTEGRATION", fill=255, font=font_geneva_footer)
+    bar_h = 30
+    footer_y = HEIGHT - pad - bar_h
+    draw.rounded_rectangle([pad, footer_y, WIDTH - pad, footer_y + bar_h], radius=6, fill=0)
+
+    footer_text = "ENPHASE DASHBOARD HISTORY INTEGRATION"
+    f_bbox = draw.textbbox((0, 0), footer_text, font=font_footer)
+    f_h = f_bbox[3] - f_bbox[1]
+    f_y = footer_y + (bar_h - f_h) // 2 - f_bbox[1]
+    draw.text((pad + 14, f_y), footer_text, fill=255, font=font_footer)
 
     # Active indicator
     active_str = "ACTIVE"
-    draw.ellipse([WIDTH - pad - 72, footer_y + 10, WIDTH - pad - 64, footer_y + 18], fill=255)
-    draw.text((WIDTH - pad - 58, footer_y + 7), active_str, fill=255, font=font_geneva_footer)
+    a_bbox = draw.textbbox((0, 0), active_str, font=font_footer)
+    a_w = a_bbox[2] - a_bbox[0]
 
-    # Convert to 1-bit monochrome image
-    monochrome_img = img.convert("1", dither=Image.Dither.FLOYDSTEINBERG)
+    circ_r = 4
+    circ_x = WIDTH - pad - 14 - a_w - 12
+    circ_y = footer_y + bar_h // 2
+    draw.ellipse([circ_x - circ_r, circ_y - circ_r, circ_x + circ_r, circ_y + circ_r], fill=255)
+    draw.text((WIDTH - pad - 14 - a_w, f_y), active_str, fill=255, font=font_footer)
+
+    # Convert to 1-bit monochrome image (crisp pixel rendering without dither speckles)
+    monochrome_img = img.convert("1", dither=Image.Dither.NONE)
 
     # Save PNG
     os.makedirs(os.path.dirname(output_png_path), exist_ok=True)
