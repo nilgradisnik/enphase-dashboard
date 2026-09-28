@@ -5,7 +5,9 @@ PyYAML
 Enphase-API
 Flask-SQLAlchemy
 psycopg2-binary
+psycopg[binary]
 Flask-APScheduler
 gunicorn
 Pillow
+
 
