@@ -15,7 +15,7 @@ Bypasses cloud latency and rate limits to deliver sub-second telemetry, resilien
 - **Automated Gap Interpolation**: Detects server downtime outages (>2 hours), distributes the true accumulated delta proportionally across missed days, and marks them with an "Estimated" badge.
 - **Split-Phase & Inverter Health**: Monitors Phase A/B voltages, currents, and power factors, alongside individual microinverter operating statuses and serial numbers.
 - **Zero-Build Lightweight UI**: Built using [Alpine.js](https://alpinejs.dev/) and [Chart.js](https://www.chartjs.org/) served via Flask—no Node, React, or npm build pipelines required.
-- **Native TRMNL E-Ink Display (BYOS)**: Directly serves [TRMNL OG](https://usetrmnl.com) devices via the native TRMNL BYOS protocol. Renders an 800×480 1-bit monochrome "Daily Solar Status" card layout on a configurable cadence (e.g. 10 min) with zero external cloud or headless browser dependencies.
+- **Native TRMNL E-Ink Display (BYOS)**: Directly serves [TRMNL OG](https://trmnl.com) devices via the native TRMNL BYOS protocol. Renders an 800×480 1-bit monochrome "Daily Solar Status" card layout on a configurable cadence (e.g. 10 min) with zero external cloud or headless browser dependencies.
 
 ---
 
@@ -132,26 +132,36 @@ By default, the local app will use a file-backed SQLite database at `instance/en
 
 ## TRMNL E-Ink Display Integration (BYOS)
 
-The dashboard includes native **Bring Your Own Server (BYOS)** support for [TRMNL](https://usetrmnl.com) OG e-paper displays, eliminating any need for intermediary servers (like `byos_next` or `terminus`), external cloud services, or heavy headless browsers.
+The dashboard includes native **Bring Your Own Server (BYOS)** support for [TRMNL](https://trmnl.com) OG e-paper displays, eliminating any need for the official TRMNL cloud service, intermediary servers like `terminus`, or heavy headless browsers.
 
 ### Display Overview
-The screen layout is custom-designed for the **800×480 monochrome** e-ink display and features:
+The screen layout is custom-designed for the **800×480 monochrome** e-ink display using the [`Monaspace Krypton`](https://monaspace.githubnext.com/) monospace font for a clean, mechanical coder aesthetic:
 - **Header**: Status dot, screen title, and localized "last updated" timestamp.
 - **6-Card Live Metric Grid**:
-  1. **Today's Solar**: Total production ($kWh$).
-  2. **Today's Usage**: Total household consumption ($kWh$).
-  3. **Today's Net Grid**: Net energy flow ($kWh$). Dynamically inverts to solid black with white text when exporting solar power to the grid.
-  4. **Today's Export**: Energy exported to the grid ($kWh$).
-  5. **Today's Import**: Energy imported from the grid ($kWh$).
-  6. **Solar Coverage**: Percentage of household energy covered directly by solar generation.
-- **Footer**: System status bar showing active integration.
+  1. **SOLAR**: Total daily production ($kWh$).
+  2. **USAGE**: Total daily household consumption ($kWh$).
+  3. **NET GRID**: Net energy flow ($kWh$), showing `+` for export and `-` for grid import.
+  4. **EXPORT**: Total daily energy exported to the grid ($kWh$).
+  5. **IMPORT**: Total daily energy imported from the grid ($kWh$).
+  6. **SOLAR COVERAGE**: Percentage of household energy covered directly by solar generation.
+- **Footer**: System status bar showing active integration (`ENPHASE DASHBOARD • ACTIVE`).
 
 ### TRMNL Device Endpoints
 - `GET /api/setup`: Returns device handshake and configuration instructions.
-- `GET /api/display`: Polled by TRMNL; returns rotation (`1`), sleep duration, and image URL.
-- `GET /api/display/current.png` & `GET /api/display/current.bmp`: Serves the rendered 1-bit monochrome image.
-- `POST /api/log`: Ingests and acknowledges device telemetry logs.
-- `GET /trmnl`: Interactive in-browser display preview simulating the physical TRMNL OG device.
+- `GET /api/display`: Polled by TRMNL on wake; returns sleep duration, landscape rotation (`1`), dynamic timestamped filename (`solar_<mtime>.bmp`), and the image download URL.
+- `GET /api/display/current.bmp` & `GET /api/display/current.png`: Serves the rendered 1-bit monochrome image.
+- `POST /api/log`: Ingests and acknowledges device telemetry and error logs.
+- `GET /api/display/status`: Returns JSON with the latest recorded device status (battery voltage, Wi-Fi RSSI, firmware version, last check-in timestamp, and error logs).
+- `GET /trmnl`: Interactive in-browser display preview simulating the physical TRMNL OG device, complete with live Device Telemetry & Status card.
+
+### Reading Device Telemetry & Logs
+You can monitor your TRMNL device health in three ways:
+1. **Web Preview Simulator**: Visit `/trmnl` on your dashboard to see battery voltage, Wi-Fi signal (RSSI), firmware version, and device error logs.
+2. **Telemetry JSON API**: Query `GET /api/display/status` from any script or Home Assistant.
+3. **Container Logs**: Watch live check-ins and device logs in real time:
+   ```bash
+   docker compose logs -f enphase-dashboard
+   ```
 
 ### Setting Up Your TRMNL Device
 1. Put your TRMNL OG device into **Setup Mode** (double-click the physical button).
@@ -162,7 +172,7 @@ The screen layout is custom-designed for the **800×480 monochrome** e-ink displ
      - If using a domain: `https://solar.nil.earth`
      - If using local IP: `http://<YOUR_SERVER_IP>:5000`
    - Set **API Key** to the `api_key` configured in your `config.yml` (default: `local-trmnl-token`).
-4. Save and reboot. The TRMNL firmware will automatically contact `/api/setup` and poll `/api/display` to render your solar status screen!
+4. Save and reboot. The TRMNL firmware will automatically contact `/api/setup` and poll `/api/display` to render your solar status screen! Single-clicking the device button forces an immediate update.
 
 
 ---
