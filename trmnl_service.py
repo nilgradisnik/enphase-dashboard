@@ -1,4 +1,5 @@
 import os
+import json
 from datetime import datetime, timezone
 from PIL import Image, ImageDraw, ImageFont
 from db import DailyStats
@@ -9,6 +10,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FONTS_DIR = os.path.join(BASE_DIR, 'static', 'fonts')
 OUTPUT_IMAGE_PATH = os.path.join(BASE_DIR, 'static', 'trmnl_display.png')
 OUTPUT_BMP_PATH = os.path.join(BASE_DIR, 'static', 'trmnl_display.bmp')
+TELEMETRY_PATH = os.path.join(BASE_DIR, 'static', 'trmnl_telemetry.json')
 
 
 def get_trmnl_data(app):
@@ -212,3 +214,72 @@ def update_trmnl_display(app):
     except Exception as e:
         print(f"Error updating TRMNL display: {e}")
         return None
+
+
+def load_trmnl_telemetry() -> dict:
+    """Loads the last recorded TRMNL device status, telemetry, and error logs."""
+    if os.path.exists(TELEMETRY_PATH):
+        try:
+            with open(TELEMETRY_PATH, 'r') as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {
+        "last_seen": None,
+        "mac_id": None,
+        "fw_version": None,
+        "battery_voltage": None,
+        "rssi": None,
+        "logs": []
+    }
+
+
+def save_trmnl_telemetry(data: dict):
+    """Persists TRMNL device status and logs to static/trmnl_telemetry.json."""
+    try:
+        os.makedirs(os.path.dirname(TELEMETRY_PATH), exist_ok=True)
+        with open(TELEMETRY_PATH, 'w') as f:
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        print(f"Error saving TRMNL telemetry: {e}", flush=True)
+
+
+def record_trmnl_checkin(headers: dict) -> dict:
+    """Extracts device telemetry from TRMNL request headers and stores it."""
+    telemetry = load_trmnl_telemetry()
+    mac_id = headers.get('ID') or headers.get('Id')
+    fw_ver = headers.get('FW-Version') or headers.get('Fw-Version')
+    battery = headers.get('Battery-Voltage') or headers.get('Battery_Voltage')
+    rssi = headers.get('RSSI') or headers.get('Rssi')
+
+    now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
+    telemetry["last_seen"] = now_str
+    if mac_id:
+        telemetry["mac_id"] = mac_id
+    if fw_ver:
+        telemetry["fw_version"] = fw_ver
+    if battery:
+        telemetry["battery_voltage"] = battery
+    if rssi:
+        telemetry["rssi"] = rssi
+
+    save_trmnl_telemetry(telemetry)
+    print(f"[TRMNL] Check-in: MAC={mac_id}, FW={fw_ver}, Battery={battery}V, RSSI={rssi}dBm at {now_str}", flush=True)
+    return telemetry
+
+
+def record_trmnl_log_message(headers: dict, message: any) -> dict:
+    """Appends incoming error / log report from the TRMNL device."""
+    telemetry = load_trmnl_telemetry()
+    now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
+    entry = {
+        "timestamp": now_str,
+        "mac_id": headers.get('ID') or headers.get('Id'),
+        "message": message
+    }
+    telemetry.setdefault("logs", []).append(entry)
+    telemetry["logs"] = telemetry["logs"][-30:]  # Keep last 30 logs
+    save_trmnl_telemetry(telemetry)
+    print(f"[TRMNL LOG] {now_str} [{headers.get('ID')}]: {message}", flush=True)
+    return telemetry
+

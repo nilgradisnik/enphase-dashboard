@@ -88,3 +88,115 @@ body {
 .btn-secondary:hover {
     background: #52525b;
 }
+
+.telemetry-card {
+    margin-top: 32px;
+    width: 856px;
+    max-width: 100%;
+    background: #27272a;
+    border: 1px solid #3f3f46;
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-sizing: border-box;
+}
+
+.telemetry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.telemetry-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    color: #f4f4f5;
+}
+
+.btn-sm {
+    background: #3f3f46;
+    color: #a1a1aa;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.btn-sm:hover {
+    background: #52525b;
+    color: #ffffff;
+}
+
+.telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+}
+
+.telemetry-item {
+    background: #18181b;
+    border: 1px solid #3f3f46;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.telemetry-label {
+    font-size: 0.75rem;
+    color: #a1a1aa;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.telemetry-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #38bdf8;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.telemetry-logs {
+    margin-top: 20px;
+    border-top: 1px solid #3f3f46;
+    padding-top: 16px;
+}
+
+.telemetry-logs h3 {
+    font-size: 0.875rem;
+    color: #e4e4e7;
+    margin: 0 0 10px 0;
+}
+
+.logs-container {
+    background: #18181b;
+    border-radius: 8px;
+    padding: 12px;
+    max-height: 180px;
+    overflow-y: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.8rem;
+}
+
+.log-entry {
+    display: flex;
+    gap: 12px;
+    padding: 4px 0;
+    border-bottom: 1px solid #27272a;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+.log-time {
+    color: #71717a;
+    white-space: nowrap;
+}
+
+.log-msg {
+    color: #fbbf24;
+}

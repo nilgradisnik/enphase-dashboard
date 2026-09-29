@@ -18,11 +18,56 @@
     </div>
     <div class="controls">
         <button class="btn" onclick="refreshImage()">↻ Refresh Screen</button>
-        <a class="btn btn-secondary" href="{{ url_for('trmnl_display_api') }}" target="_blank">View /api/display JSON</a>
-        <a class="btn btn-secondary" href="{{ url_for('trmnl_setup_api') }}" target="_blank">View /api/setup JSON</a>
-        <a class="btn btn-secondary" href="{{ url_for('trmnl_current_png') }}" target="_blank">Open Raw PNG</a>
+        <a class="btn btn-secondary" href="{{ url_for('trmnl_display_api') }}" target="_blank">/api/display JSON</a>
+        <a class="btn btn-secondary" href="{{ url_for('trmnl_status_api') }}" target="_blank">Device Telemetry JSON</a>
+        <a class="btn btn-secondary" href="{{ url_for('trmnl_current_png') }}" target="_blank">Raw PNG</a>
+        <a class="btn btn-secondary" href="{{ url_for('trmnl_current_bmp') }}" target="_blank">Raw BMP</a>
         <a class="btn btn-secondary" href="{{ url_for('index') }}" target="_blank">Dashboard Home</a>
     </div>
+
+    <div class="telemetry-card">
+        <div class="telemetry-header">
+            <h2>Device Telemetry & Status</h2>
+            <a class="btn-sm" href="{{ url_for('trmnl_status_api') }}" target="_blank">Raw JSON</a>
+        </div>
+        <div class="telemetry-grid">
+            <div class="telemetry-item">
+                <span class="telemetry-label">Last Check-in</span>
+                <span class="telemetry-value">{{ telemetry.last_seen or 'No check-in yet' }}</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="telemetry-label">Device MAC / ID</span>
+                <span class="telemetry-value">{{ telemetry.mac_id or '—' }}</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="telemetry-label">Battery Voltage</span>
+                <span class="telemetry-value">{% if telemetry.battery_voltage %}{{ telemetry.battery_voltage }}V{% else %}—{% endif %}</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="telemetry-label">Wi-Fi Signal</span>
+                <span class="telemetry-value">{% if telemetry.rssi %}{{ telemetry.rssi }} dBm{% else %}—{% endif %}</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="telemetry-label">Firmware</span>
+                <span class="telemetry-value">{{ telemetry.fw_version or '—' }}</span>
+            </div>
+        </div>
+
+        {% if telemetry.logs and telemetry.logs|length > 0 %}
+        <div class="telemetry-logs">
+            <h3>Recent Device Logs</h3>
+            <div class="logs-container">
+                {% for log in telemetry.logs %}
+                <div class="log-entry">
+                    <span class="log-time">{{ log.timestamp }}</span>
+                    <span class="log-msg">{{ log.message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
     <script>
         function refreshImage() {
             const img = document.getElementById('trmnl-img');

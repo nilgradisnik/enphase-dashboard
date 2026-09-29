@@ -7,7 +7,7 @@ from flask import Flask, render_template, jsonify, send_file, request, make_resp
 from flask_apscheduler import APScheduler
 from enphase_api.local.gateway import Gateway
 from db import db, MeterReading, DailyStats
-from trmnl_service import update_trmnl_display, OUTPUT_IMAGE_PATH, OUTPUT_BMP_PATH
+from trmnl_service import update_trmnl_display, OUTPUT_IMAGE_PATH, OUTPUT_BMP_PATH, load_trmnl_telemetry, record_trmnl_checkin, record_trmnl_log_message
 
 
 app = Flask(__name__)
@@ -197,11 +197,7 @@ def trmnl_display_api():
     refresh_rate = int(trmnl_cfg.get('refresh_rate_seconds', 600))
     base_url = get_request_base_url()
 
-    headers = request.headers
-    fw_ver = headers.get('FW-Version', 'unknown')
-    battery = headers.get('Battery-Voltage', 'unknown')
-    rssi = headers.get('RSSI', 'unknown')
-    app.logger.info(f"TRMNL check-in: FW={fw_ver}, Battery={battery}V, RSSI={rssi}dBm")
+    record_trmnl_checkin(dict(request.headers))
 
     if not os.path.exists(OUTPUT_BMP_PATH):
         update_trmnl_display(app)
@@ -246,13 +242,19 @@ def trmnl_current_bmp():
 @app.route('/api/log', methods=['POST'])
 def trmnl_log_api():
     log_data = request.get_json(silent=True) or request.form.to_dict() or request.data.decode('utf-8', errors='ignore')
-    app.logger.warning(f"TRMNL device log: {log_data}")
+    record_trmnl_log_message(dict(request.headers), log_data)
     return jsonify({"status": 200})
+
+
+@app.route('/api/display/status', methods=['GET'])
+def trmnl_status_api():
+    return jsonify(load_trmnl_telemetry())
 
 
 @app.route('/trmnl', methods=['GET'])
 def trmnl_preview_page():
-    return render_template('trmnl.html')
+    telemetry = load_trmnl_telemetry()
+    return render_template('trmnl.html', telemetry=telemetry)
 
 
 
