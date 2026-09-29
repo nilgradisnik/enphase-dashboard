@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 import json
 import yaml
 from flask import Flask, render_template, jsonify, send_file, request, make_response
@@ -184,8 +185,8 @@ def trmnl_setup_api():
         "status": 200,
         "api_key": api_key,
         "friendly_id": "TRMNL-SOLAR",
-        "image_url": f"{base_url}/api/display/current.png",
-        "filename": "solar.png",
+        "image_url": f"{base_url}/api/display/current.bmp",
+        "filename": "solar_setup.bmp",
         "message": "TRMNL connected to Enphase solar dashboard"
     })
 
@@ -196,18 +197,29 @@ def trmnl_display_api():
     refresh_rate = int(trmnl_cfg.get('refresh_rate_seconds', 600))
     base_url = get_request_base_url()
 
-    if not os.path.exists(OUTPUT_IMAGE_PATH):
+    headers = request.headers
+    fw_ver = headers.get('FW-Version', 'unknown')
+    battery = headers.get('Battery-Voltage', 'unknown')
+    rssi = headers.get('RSSI', 'unknown')
+    app.logger.info(f"TRMNL check-in: FW={fw_ver}, Battery={battery}V, RSSI={rssi}dBm")
+
+    if not os.path.exists(OUTPUT_BMP_PATH):
         update_trmnl_display(app)
+
+    # TRMNL firmware uses filename comparison to skip refresh if unchanged.
+    # Appending mtime ensures TRMNL detects when a new render is available.
+    mtime = int(os.path.getmtime(OUTPUT_BMP_PATH)) if os.path.exists(OUTPUT_BMP_PATH) else int(time.time())
+    filename = f"solar_{mtime}.bmp"
 
     return jsonify({
         "status": 0,
-        "image_url": f"{base_url}/api/display/current.png",
-        "filename": "solar.png",
+        "image_url": f"{base_url}/api/display/current.bmp",
+        "filename": filename,
         "refresh_rate": refresh_rate,
         "reset_firmware": False,
         "update_firmware": False,
         "firmware_url": None,
-        "special_function": None,
+        "special_function": "none",
         "image_rotate": 1
     })
 
@@ -233,6 +245,8 @@ def trmnl_current_bmp():
 
 @app.route('/api/log', methods=['POST'])
 def trmnl_log_api():
+    log_data = request.get_json(silent=True) or request.form.to_dict() or request.data.decode('utf-8', errors='ignore')
+    app.logger.warning(f"TRMNL device log: {log_data}")
     return jsonify({"status": 200})
 
 
