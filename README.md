@@ -168,9 +168,9 @@ You can monitor your TRMNL device health in three ways:
 2. Connect to the device's Wi-Fi hotspot (`TRMNL-...`) and navigate to `http://192.168.4.1`.
 3. In the Wi-Fi setup captive portal:
    - Navigate to **Advanced** > **Custom Server**.
-   - Enable Custom Server and set the URL to your base host without a trailing slash:
-     - If using a domain: `https://solar.nil.earth`
-     - If using local IP: `http://<YOUR_SERVER_IP>:5000`
+   - Enable Custom Server and set the URL to the address of your `enphase-dashboard` server (without a trailing slash):
+     - Local LAN IP: `http://<YOUR_SERVER_IP>:5000`
+     - Domain / Reverse proxy: `https://<YOUR_DOMAIN>`
    - Set **API Key** to the `api_key` configured in your `config.yml` (default: `local-trmnl-token`).
 4. Save and reboot. The TRMNL firmware will automatically contact `/api/setup` and poll `/api/display` to render your solar status screen! Single-clicking the device button forces an immediate update.
 
