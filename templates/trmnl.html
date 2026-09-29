@@ -26,46 +26,85 @@
     </div>
 
     <div class="telemetry-card">
-        <div class="telemetry-header">
-            <h2>Device Telemetry & Status</h2>
-            <a class="btn-sm" href="{{ url_for('trmnl_status_api') }}" target="_blank">Raw JSON</a>
-        </div>
-        <div class="telemetry-grid">
-            <div class="telemetry-item">
-                <span class="telemetry-label">Last Check-in</span>
-                <span class="telemetry-value">{{ telemetry.last_seen or 'No check-in yet' }}</span>
+        <div class="telemetry-top">
+            <div class="device-info">
+                <div class="device-title-row">
+                    <span class="status-dot {% if telemetry.last_seen %}online{% else %}waiting{% endif %}"></span>
+                    <h2 class="device-title">TRMNL Display</h2>
+                    {% if telemetry.mac_id %}
+                    <span class="mac-pill" title="Device MAC ID">{{ telemetry.mac_id }}</span>
+                    {% endif %}
+                </div>
+                <div class="device-subtext">
+                    {% if telemetry.last_seen %}
+                    Last check-in: <strong>{{ telemetry.last_seen }}</strong>
+                    {% else %}
+                    <span class="text-muted">Awaiting first check-in from device...</span>
+                    {% endif %}
+                </div>
             </div>
-            <div class="telemetry-item">
-                <span class="telemetry-label">Device MAC / ID</span>
-                <span class="telemetry-value">{{ telemetry.mac_id or '—' }}</span>
-            </div>
-            <div class="telemetry-item">
-                <span class="telemetry-label">Battery Voltage</span>
-                <span class="telemetry-value">{% if telemetry.battery_voltage %}{{ telemetry.battery_voltage }}V{% else %}—{% endif %}</span>
-            </div>
-            <div class="telemetry-item">
-                <span class="telemetry-label">Wi-Fi Signal</span>
-                <span class="telemetry-value">{% if telemetry.rssi %}{{ telemetry.rssi }} dBm{% else %}—{% endif %}</span>
-            </div>
-            <div class="telemetry-item">
-                <span class="telemetry-label">Firmware</span>
-                <span class="telemetry-value">{{ telemetry.fw_version or '—' }}</span>
+            <div class="telemetry-actions">
+                <a class="btn-sm" href="{{ url_for('trmnl_status_api') }}" target="_blank">Raw Telemetry JSON</a>
             </div>
         </div>
 
-        {% if telemetry.logs and telemetry.logs|length > 0 %}
-        <div class="telemetry-logs">
-            <h3>Recent Device Logs</h3>
-            <div class="logs-container">
-                {% for log in telemetry.logs %}
-                <div class="log-entry">
-                    <span class="log-time">{{ log.timestamp }}</span>
-                    <span class="log-msg">{{ log.message }}</span>
+        <div class="telemetry-stats">
+            <div class="stat-tile">
+                <span class="stat-label">Battery</span>
+                <div class="stat-content">
+                    <span class="stat-main">{% if telemetry.get('battery_voltage') %}{{ telemetry.battery_voltage }}<span class="stat-unit">V</span>{% else %}—{% endif %}</span>
+                    {% if telemetry.get('battery_pct') is not none %}
+                    <span class="badge {% if telemetry.battery_pct > 20 %}badge-green{% else %}badge-amber{% endif %}">{{ telemetry.battery_pct }}%</span>
+                    {% endif %}
                 </div>
-                {% endfor %}
+            </div>
+
+            <div class="stat-tile">
+                <span class="stat-label">Wi-Fi Signal</span>
+                <div class="stat-content">
+                    <span class="stat-main">{% if telemetry.get('rssi') %}{{ telemetry.rssi }}<span class="stat-unit">dBm</span>{% else %}—{% endif %}</span>
+                    {% if telemetry.get('wifi_quality') %}
+                    <span class="badge badge-blue">{{ telemetry.wifi_quality }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="stat-tile">
+                <span class="stat-label">Firmware</span>
+                <div class="stat-content">
+                    <span class="stat-main">{% if telemetry.get('fw_version') %}v{{ telemetry.fw_version.lstrip('v') }}{% else %}—{% endif %}</span>
+                </div>
+            </div>
+
+            <div class="stat-tile">
+                <span class="stat-label">Refresh Interval</span>
+                <div class="stat-content">
+                    <span class="stat-main">{{ refresh_rate_min }}<span class="stat-unit">min</span></span>
+                </div>
             </div>
         </div>
-        {% endif %}
+
+        <div class="telemetry-logs-section">
+            <div class="logs-header">
+                <h3 class="logs-title">Device Logs & Diagnostics</h3>
+                <span class="logs-count">{% if telemetry.logs %}{{ telemetry.logs|length }} entries{% else %}0 entries{% endif %}</span>
+            </div>
+            <div class="logs-console">
+                {% if telemetry.logs and telemetry.logs|length > 0 %}
+                    {% for log in telemetry.logs %}
+                    <div class="log-line">
+                        <span class="log-timestamp">[{{ log.timestamp }}]</span>
+                        <span class="log-content">{{ log.message }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="logs-empty">
+                        <span class="logs-empty-check">✓</span>
+                        <span>No error logs reported by TRMNL device. Operating normally.</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <script>

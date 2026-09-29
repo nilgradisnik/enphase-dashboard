@@ -253,8 +253,12 @@ def trmnl_status_api():
 
 @app.route('/trmnl', methods=['GET'])
 def trmnl_preview_page():
+    config = load_config()
+    trmnl_cfg = config.get('trmnl', {})
+    refresh_rate_sec = int(trmnl_cfg.get('refresh_rate_seconds', 600))
+    refresh_rate_min = max(1, refresh_rate_sec // 60)
     telemetry = load_trmnl_telemetry()
-    return render_template('trmnl.html', telemetry=telemetry)
+    return render_template('trmnl.html', telemetry=telemetry, refresh_rate_min=refresh_rate_min)
 
 
 

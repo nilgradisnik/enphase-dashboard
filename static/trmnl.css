@@ -90,35 +90,87 @@ body {
 }
 
 .telemetry-card {
-    margin-top: 32px;
+    margin-top: 28px;
     width: 856px;
     max-width: 100%;
-    background: #27272a;
-    border: 1px solid #3f3f46;
+    background: #202023;
+    border: 1px solid #323238;
     border-radius: 16px;
-    padding: 20px 24px;
+    padding: 24px;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-.telemetry-header {
+.telemetry-top {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #2d2d32;
 }
 
-.telemetry-header h2 {
-    font-size: 1.1rem;
+.device-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot.online {
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.status-dot.waiting {
+    background: #f59e0b;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+.device-title {
+    font-size: 1.15rem;
     font-weight: 600;
-    margin: 0;
     color: #f4f4f5;
+    margin: 0;
+}
+
+.mac-pill {
+    background: #18181b;
+    border: 1px solid #3f3f46;
+    color: #a1a1aa;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.04em;
+    word-break: break-all;
+}
+
+.device-subtext {
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: #71717a;
+}
+
+.device-subtext strong {
+    color: #e4e4e7;
 }
 
 .btn-sm {
     background: #3f3f46;
     color: #a1a1aa;
     font-size: 0.75rem;
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: 6px;
     text-decoration: none;
     transition: all 0.15s ease;
@@ -129,74 +181,166 @@ body {
     color: #ffffff;
 }
 
-.telemetry-grid {
+.telemetry-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
 }
 
-.telemetry-item {
+@media (max-width: 768px) {
+    .telemetry-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.stat-tile {
     background: #18181b;
-    border: 1px solid #3f3f46;
-    border-radius: 10px;
-    padding: 12px 14px;
+    border: 1px solid #2d2d32;
+    border-radius: 12px;
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
-.telemetry-label {
-    font-size: 0.75rem;
-    color: #a1a1aa;
+.stat-label {
+    font-size: 0.72rem;
+    color: #71717a;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
+    font-weight: 500;
 }
 
-.telemetry-value {
-    font-size: 0.95rem;
+.stat-content {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.stat-main {
+    font-size: 1.25rem;
     font-weight: 600;
-    color: #38bdf8;
+    color: #f4f4f5;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-.telemetry-logs {
-    margin-top: 20px;
-    border-top: 1px solid #3f3f46;
-    padding-top: 16px;
+.stat-unit {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #a1a1aa;
+    margin-left: 2px;
 }
 
-.telemetry-logs h3 {
-    font-size: 0.875rem;
+.badge {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.badge-green {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.badge-amber {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.badge-blue {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.badge-gray {
+    background: #27272a;
+    color: #a1a1aa;
+    border: 1px solid #3f3f46;
+}
+
+.telemetry-logs-section {
+    border-top: 1px solid #2d2d32;
+    padding-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.logs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logs-title {
+    font-size: 0.88rem;
+    font-weight: 600;
     color: #e4e4e7;
-    margin: 0 0 10px 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.logs-container {
+.logs-count {
+    font-size: 0.72rem;
+    color: #71717a;
     background: #18181b;
-    border-radius: 8px;
-    padding: 12px;
-    max-height: 180px;
+    border: 1px solid #2d2d32;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.logs-console {
+    background: #141416;
+    border: 1px solid #27272a;
+    border-radius: 10px;
+    padding: 14px;
+    max-height: 200px;
     overflow-y: auto;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.8rem;
+    line-height: 1.5;
 }
 
-.log-entry {
+.log-line {
     display: flex;
     gap: 12px;
     padding: 4px 0;
-    border-bottom: 1px solid #27272a;
+    border-bottom: 1px solid #1c1c1f;
 }
 
-.log-entry:last-child {
+.log-line:last-child {
     border-bottom: none;
 }
 
-.log-time {
-    color: #71717a;
-    white-space: nowrap;
+.log-timestamp {
+    color: #52525b;
+    flex-shrink: 0;
 }
 
-.log-msg {
-    color: #fbbf24;
+.log-content {
+    color: #fcd34d;
+    word-break: break-all;
+}
+
+.logs-empty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #71717a;
+    font-size: 0.82rem;
+    padding: 8px 4px;
+}
+
+.logs-empty-check {
+    color: #10b981;
+    font-weight: bold;
 }

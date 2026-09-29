@@ -229,6 +229,8 @@ def load_trmnl_telemetry() -> dict:
         "mac_id": None,
         "fw_version": None,
         "battery_voltage": None,
+        "battery_pct": None,
+        "wifi_quality": None,
         "rssi": None,
         "logs": []
     }
@@ -252,34 +254,58 @@ def record_trmnl_checkin(headers: dict) -> dict:
     battery = headers.get('Battery-Voltage') or headers.get('Battery_Voltage')
     rssi = headers.get('RSSI') or headers.get('Rssi')
 
-    now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
-    telemetry["last_seen"] = now_str
+    from dashboard_services import get_target_timezone
+    tz = get_target_timezone()
+    now_local = datetime.now(timezone.utc).astimezone(tz)
+    short_time_str = now_local.strftime('%b %d, %I:%M %p')
+
+    telemetry["last_seen"] = short_time_str
     if mac_id:
         telemetry["mac_id"] = mac_id
     if fw_ver:
         telemetry["fw_version"] = fw_ver
     if battery:
         telemetry["battery_voltage"] = battery
+        try:
+            v = float(battery)
+            telemetry["battery_pct"] = min(100, max(0, int((v - 3.3) / (4.2 - 3.3) * 100)))
+        except (ValueError, TypeError):
+            telemetry["battery_pct"] = None
     if rssi:
         telemetry["rssi"] = rssi
+        try:
+            r = int(rssi)
+            if r >= -60:
+                telemetry["wifi_quality"] = "Great"
+            elif r >= -70:
+                telemetry["wifi_quality"] = "Good"
+            elif r >= -80:
+                telemetry["wifi_quality"] = "Fair"
+            else:
+                telemetry["wifi_quality"] = "Weak"
+        except (ValueError, TypeError):
+            telemetry["wifi_quality"] = None
 
     save_trmnl_telemetry(telemetry)
-    print(f"[TRMNL] Check-in: MAC={mac_id}, FW={fw_ver}, Battery={battery}V, RSSI={rssi}dBm at {now_str}", flush=True)
+    print(f"[TRMNL] Check-in: MAC={mac_id}, FW={fw_ver}, Battery={battery}V, RSSI={rssi}dBm at {short_time_str}", flush=True)
     return telemetry
 
 
 def record_trmnl_log_message(headers: dict, message: any) -> dict:
     """Appends incoming error / log report from the TRMNL device."""
     telemetry = load_trmnl_telemetry()
-    now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
+    from dashboard_services import get_target_timezone
+    tz = get_target_timezone()
+    now_local = datetime.now(timezone.utc).astimezone(tz)
+    short_time_str = now_local.strftime('%b %d, %I:%M:%S %p')
     entry = {
-        "timestamp": now_str,
+        "timestamp": short_time_str,
         "mac_id": headers.get('ID') or headers.get('Id'),
         "message": message
     }
     telemetry.setdefault("logs", []).append(entry)
     telemetry["logs"] = telemetry["logs"][-30:]  # Keep last 30 logs
     save_trmnl_telemetry(telemetry)
-    print(f"[TRMNL LOG] {now_str} [{headers.get('ID')}]: {message}", flush=True)
+    print(f"[TRMNL LOG] {short_time_str} [{headers.get('ID')}]: {message}", flush=True)
     return telemetry
 
