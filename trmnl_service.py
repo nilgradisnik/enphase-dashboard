@@ -70,15 +70,15 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
     draw = ImageDraw.Draw(img)
 
     # Load single consolidated font
-    FONT_FILE = os.path.join(FONTS_DIR, "Inter_18pt-Regular.ttf")
-    font_title = ImageFont.truetype(FONT_FILE, 30)
-    font_time = ImageFont.truetype(FONT_FILE, 18)
-    font_box_label = ImageFont.truetype(FONT_FILE, 18)
-    font_num = ImageFont.truetype(FONT_FILE, 52)
-    font_num_sm = ImageFont.truetype(FONT_FILE, 44)
-    font_unit = ImageFont.truetype(FONT_FILE, 24)
-    font_unit_long = ImageFont.truetype(FONT_FILE, 16)
-    font_footer = ImageFont.truetype(FONT_FILE, 16)
+    FONT_FILE = os.path.join(FONTS_DIR, "MonaspaceKrypton-SemiBold.otf")
+    font_title = ImageFont.truetype(FONT_FILE, 25)
+    font_time = ImageFont.truetype(FONT_FILE, 15)
+    font_box_label = ImageFont.truetype(FONT_FILE, 15)
+    font_num = ImageFont.truetype(FONT_FILE, 48)
+    font_num_sm = ImageFont.truetype(FONT_FILE, 36)
+    font_unit = ImageFont.truetype(FONT_FILE, 18)
+    font_unit_long = ImageFont.truetype(FONT_FILE, 13)
+    font_footer = ImageFont.truetype(FONT_FILE, 14)
 
     pad = 24
 
@@ -89,9 +89,9 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
 
     # Title
     title_str = str(data.get("title", "DAILY SOLAR STATUS")).upper()
-    t_bbox = draw.textbbox((0, 0), title_str, font=font_title, stroke_width=1)
+    t_bbox = draw.textbbox((0, 0), title_str, font=font_title)
     t_h = t_bbox[3] - t_bbox[1]
-    draw.text((pad + 38, pad + (28 - t_h) // 2 - t_bbox[1]), title_str, fill=0, font=font_title, stroke_width=1)
+    draw.text((pad + 38, pad + (28 - t_h) // 2 - t_bbox[1]), title_str, fill=0, font=font_title)
 
     # Last Updated Time (right aligned)
     time_str = data.get("last_updated", "")
@@ -148,17 +148,17 @@ def render_trmnl_solar(data: dict, output_png_path: str = OUTPUT_IMAGE_PATH, out
         u_w = (u_bbox[2] - u_bbox[0]) if unit_str else 0
 
         n_font = font_num
-        n_bbox = draw.textbbox((0, 0), num_str, font=n_font, stroke_width=1)
+        n_bbox = draw.textbbox((0, 0), num_str, font=n_font)
         n_w = n_bbox[2] - n_bbox[0]
 
         # If combined width is tight for the card, use slightly smaller number size
-        if unit_str and (14 + n_w + 6 + u_w > col_w - 12):
+        if unit_str and (14 + n_w + 6 + u_w > col_w - 18):
             n_font = font_num_sm
-            n_bbox = draw.textbbox((0, 0), num_str, font=n_font, stroke_width=1)
+            n_bbox = draw.textbbox((0, 0), num_str, font=n_font)
             n_w = n_bbox[2] - n_bbox[0]
 
-        num_y = by2 - 64
-        draw.text((bx + 14, num_y), num_str, fill=0, font=n_font, stroke_width=1)
+        num_y = by2 - 62
+        draw.text((bx + 14, num_y), num_str, fill=0, font=n_font)
 
         if unit_str:
             unit_y = (num_y + n_bbox[3]) - u_bbox[3]
