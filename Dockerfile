@@ -7,7 +7,7 @@ WORKDIR /app
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV FLASK_APP=app.py
+ENV FLASK_APP=server.app
 
 # Install dependencies
 COPY requirements.txt .
@@ -22,4 +22,4 @@ EXPOSE 5000
 
 # Run the application using a production WSGI server (Gunicorn)
 # Limit to 1 worker to prevent duplicate APScheduler instances
-CMD ["gunicorn", "--workers", "1", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "--workers", "1", "--bind", "0.0.0.0:5000", "server.app:app"]

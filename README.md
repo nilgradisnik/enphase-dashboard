@@ -123,7 +123,7 @@ source venv/bin/activate
 pip install -r requirements.txt PyJWT
 
 # 3. Start the dashboard
-python app.py
+python server/app.py
 ```
 
 By default, the local app will use a file-backed SQLite database at `instance/enphase.db`.
@@ -135,33 +135,15 @@ By default, the local app will use a file-backed SQLite database at `instance/en
 The dashboard includes native **Bring Your Own Server (BYOS)** support for [TRMNL](https://trmnl.com) OG e-paper displays, eliminating any need for the official TRMNL cloud service, intermediary servers like `terminus`, or heavy headless browsers.
 
 ### Display Overview
-The screen layout is custom-designed for the **800×480 monochrome** e-ink display using the [`Monaspace Krypton`](https://monaspace.githubnext.com/) monospace font for a clean, mechanical coder aesthetic:
-- **Header**: Status dot, screen title, and localized "last updated" timestamp.
-- **6-Card Live Metric Grid**:
-  1. **SOLAR**: Total daily production ($kWh$).
-  2. **USAGE**: Total daily household consumption ($kWh$).
-  3. **NET GRID**: Net energy flow ($kWh$), showing `+` for export and `-` for grid import.
-  4. **EXPORT**: Total daily energy exported to the grid ($kWh$).
-  5. **IMPORT**: Total daily energy imported from the grid ($kWh$).
-  6. **SOLAR COVERAGE**: Percentage of household energy covered directly by solar generation.
-- **Footer**: System status bar showing active integration (`ENPHASE DASHBOARD • ACTIVE`).
+Renders an 800×480 1-bit monochrome screen designed for the TRMNL OG e-paper display, featuring daily solar production, household consumption, net grid export/import, and solar coverage metrics.
 
-### TRMNL Device Endpoints
+### Endpoints
 - `GET /api/setup`: Returns device handshake and configuration instructions.
-- `GET /api/display`: Polled by TRMNL on wake; returns sleep duration, landscape rotation (`1`), dynamic timestamped filename (`solar_<mtime>.bmp`), and the image download URL.
+- `GET /api/display`: Polled by TRMNL on wake; returns sleep duration, landscape rotation, dynamic filename, and image URL.
 - `GET /api/display/current.bmp` & `GET /api/display/current.png`: Serves the rendered 1-bit monochrome image.
 - `POST /api/log`: Ingests and acknowledges device telemetry and error logs.
-- `GET /api/display/status`: Returns JSON with the latest recorded device status (battery voltage, Wi-Fi RSSI, firmware version, last check-in timestamp, and error logs).
-- `GET /trmnl`: Interactive in-browser display preview simulating the physical TRMNL OG device, complete with live Device Telemetry & Status card.
-
-### Reading Device Telemetry & Logs
-You can monitor your TRMNL device health in three ways:
-1. **Web Preview Simulator**: Visit `/trmnl` on your dashboard to see battery voltage, Wi-Fi signal (RSSI), firmware version, and device error logs.
-2. **Telemetry JSON API**: Query `GET /api/display/status` from any script or Home Assistant.
-3. **Container Logs**: Watch live check-ins and device logs in real time:
-   ```bash
-   docker compose logs -f enphase-dashboard
-   ```
+- `GET /api/display/status`: Returns JSON with the latest recorded device status (battery voltage, Wi-Fi RSSI, firmware version, and logs).
+- `GET /trmnl`: Interactive in-browser display preview simulating the physical TRMNL OG device with live telemetry card.
 
 ### Setting Up Your TRMNL Device
 1. Put your TRMNL OG device into **Setup Mode** (double-click the physical button).

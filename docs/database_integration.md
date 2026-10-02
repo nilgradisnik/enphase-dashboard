@@ -86,9 +86,10 @@ If the server is offline for multiple days, a gap is detected between the last r
 
 ## 4. Summary of Code Implementations
 
-* **[db.py](../db.py)**: Configures Flask-SQLAlchemy and holds the model schemas for both tables. Using naive UTC datetimes prevents type mismatch errors across SQLite and Postgres.
-* **[dashboard_services.py](../dashboard_services.py)**: Houses background collection, daily aggregation math, and linear gap interpolation logic.
-* **[app.py](../app.py)**: Connects the database configuration, starts `Flask-APScheduler` to poll the Envoy local API every 15 minutes, handles circular startup dependencies, and registers historical HTTP routes (`/api/history/daily` and `/api/history/refresh`).
+* **[server/db.py](../server/db.py)**: Configures Flask-SQLAlchemy and holds the model schemas for both tables. Using naive UTC datetimes prevents type mismatch errors across SQLite and Postgres.
+* **[server/dashboard_services.py](../server/dashboard_services.py)**: Houses background collection, daily aggregation math, and linear gap interpolation logic.
+* **[server/api.py](../server/api.py)**: Contains abstracted Flask API routes including historical HTTP endpoints (`/api/history/daily` and `/api/history/refresh`), local gateway proxies, and TRMNL endpoints.
+* **[server/app.py](../server/app.py)**: Connects database configuration, initializes `Flask-APScheduler` to poll the Envoy local API every 15 minutes, registers the API blueprint, and renders UI templates.
 * **[docker-compose.yml](../docker-compose.yml)**: Integrates an `enphase-db` PostgreSQL service with a persistent volume to back the production deployment.
 * **[templates/base.html](../templates/base.html)**: Includes the Chart.js script tag and adds the "Daily History" tab button.
 * **[templates/tabs/history.html](../templates/tabs/history.html)**: Layout containing the Chart.js canvas and detailed tabular data logging.
