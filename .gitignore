@@ -14,7 +14,8 @@ configuration/system.yml
 # OS files
 .DS_Store
 
-# Generated images
+# Generated images & device telemetry
 static/trmnl_display.*
+static/trmnl_telemetry.json
 
 

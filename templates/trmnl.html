@@ -13,14 +13,14 @@
     </div>
     <div class="device-bezel">
         <div class="screen-container">
-            <img id="trmnl-img" src="{{ url_for('trmnl_current_png') }}" alt="TRMNL OG Display">
+            <img id="trmnl-img" src="{{ url_for('api.trmnl_current_png') }}" alt="TRMNL OG Display">
         </div>
     </div>
     <div class="controls">
         <button class="btn" onclick="refreshImage()">↻ Refresh Screen</button>
-        <a class="btn btn-secondary" href="{{ url_for('trmnl_display_api') }}" target="_blank">/api/display JSON</a>
-        <a class="btn btn-secondary" href="{{ url_for('trmnl_status_api') }}" target="_blank">Device Telemetry JSON</a>
-        <a class="btn btn-secondary" href="{{ url_for('trmnl_current_bmp') }}" target="_blank">Raw BMP</a>
+        <a class="btn btn-secondary" href="{{ url_for('api.trmnl_display_api') }}" target="_blank">/api/display JSON</a>
+        <a class="btn btn-secondary" href="{{ url_for('api.trmnl_status_api') }}" target="_blank">Device Telemetry JSON</a>
+        <a class="btn btn-secondary" href="{{ url_for('api.trmnl_current_bmp') }}" target="_blank">Raw BMP</a>
     </div>
 
     <div class="telemetry-card">
@@ -42,7 +42,7 @@
                 </div>
             </div>
             <div class="telemetry-actions">
-                <a class="btn-sm" href="{{ url_for('trmnl_status_api') }}" target="_blank">Raw Telemetry JSON</a>
+                <a class="btn-sm" href="{{ url_for('api.trmnl_status_api') }}" target="_blank">Raw Telemetry JSON</a>
             </div>
         </div>
 
@@ -108,7 +108,7 @@
     <script>
         function refreshImage() {
             const img = document.getElementById('trmnl-img');
-            img.src = "{{ url_for('trmnl_current_png') }}?t=" + Date.now();
+            img.src = "{{ url_for('api.trmnl_current_png') }}?t=" + Date.now();
         }
     </script>
 </body>

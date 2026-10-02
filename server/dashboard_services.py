@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, date, time, timedelta, timezone
 from sqlalchemy import or_
-from db import db, MeterReading, DailyStats
+from server.db import db, MeterReading, DailyStats
 
 def normalize_dt(dt):
     """Ensure datetimes are timezone-naive representing UTC for safe mathematical comparisons."""
@@ -13,7 +13,7 @@ def normalize_dt(dt):
 
 def get_target_timezone():
     """Load the configured timezone from config.yml, defaulting to America/New_York."""
-    from app import load_config
+    from server.config import load_config
     from zoneinfo import ZoneInfo
     config = load_config()
     tz_name = config.get('timezone', 'America/New_York')
@@ -25,7 +25,7 @@ def get_target_timezone():
 
 def get_gateway_readings():
     """Fetch readings from Enphase Envoy Gateway."""
-    from app import load_config, get_authenticated_gateway
+    from server.config import load_config, get_authenticated_gateway
     config = load_config()
     gateway = get_authenticated_gateway(config)
     # Perform API call
@@ -95,7 +95,7 @@ def record_reading(app):
                 
             # Update TRMNL screen if enabled
             try:
-                from trmnl_service import update_trmnl_display
+                from server.trmnl_service import update_trmnl_display
                 update_trmnl_display(app)
             except Exception as trmnl_err:
                 print(f"TRMNL update failed: {trmnl_err}")

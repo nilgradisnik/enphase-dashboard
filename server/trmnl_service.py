@@ -2,11 +2,11 @@ import os
 import json
 from datetime import datetime, timezone
 from PIL import Image, ImageDraw, ImageFont
-from db import DailyStats
+from server.db import DailyStats
 
 WIDTH = 800
 HEIGHT = 480
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 FONTS_DIR = os.path.join(BASE_DIR, 'static', 'fonts')
 OUTPUT_IMAGE_PATH = os.path.join(BASE_DIR, 'static', 'trmnl_display.png')
 OUTPUT_BMP_PATH = os.path.join(BASE_DIR, 'static', 'trmnl_display.bmp')
@@ -15,8 +15,8 @@ TELEMETRY_PATH = os.path.join(BASE_DIR, 'static', 'trmnl_telemetry.json')
 
 def get_trmnl_data(app):
     """Fetch the latest daily solar stats and prepare formatting for TRMNL rendering."""
-    from app import load_config
-    from dashboard_services import get_target_timezone
+    from server.config import load_config
+    from server.dashboard_services import get_target_timezone
 
     config = load_config()
     trmnl_config = config.get('trmnl', {})
@@ -254,7 +254,7 @@ def record_trmnl_checkin(headers: dict) -> dict:
     battery = headers.get('Battery-Voltage') or headers.get('Battery_Voltage')
     rssi = headers.get('RSSI') or headers.get('Rssi')
 
-    from dashboard_services import get_target_timezone
+    from server.dashboard_services import get_target_timezone
     tz = get_target_timezone()
     now_local = datetime.now(timezone.utc).astimezone(tz)
     short_time_str = now_local.strftime('%b %d, %I:%M %p')
@@ -294,7 +294,7 @@ def record_trmnl_checkin(headers: dict) -> dict:
 def record_trmnl_log_message(headers: dict, message: any) -> dict:
     """Appends incoming error / log report from the TRMNL device."""
     telemetry = load_trmnl_telemetry()
-    from dashboard_services import get_target_timezone
+    from server.dashboard_services import get_target_timezone
     tz = get_target_timezone()
     now_local = datetime.now(timezone.utc).astimezone(tz)
     short_time_str = now_local.strftime('%b %d, %I:%M:%S %p')
